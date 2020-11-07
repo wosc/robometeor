@@ -1,0 +1,25 @@
+{
+  "name": "roborally",
+  "version": "1.0.0",
+  "description": "RoboRally =========",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/marcelpanse/roborally.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/marcelpanse/roborally/issues"
+  },
+  "homepage": "https://github.com/marcelpanse/roborally#readme",
+  "dependencies": {
+    "@babel/runtime": "^7.12.5"
+  }
+}
