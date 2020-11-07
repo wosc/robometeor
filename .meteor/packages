@@ -7,7 +7,6 @@ accounts-password@1.6.2
 mizzao:bootstrap-3
 iron:router
 mizzao:user-status
-accounts-facebook@1.3.2
 meteorhacks:zones
 mquandalle:jade
 linto:fontawesome
@@ -37,6 +36,5 @@ check
 standard-minifier-css
 standard-minifier-js
 shell-server
-facebook-config-ui
 dynamic-import
 underscore

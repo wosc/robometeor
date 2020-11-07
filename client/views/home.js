@@ -22,17 +22,6 @@ Template.home.rendered = function () {
     $('.navbar-toggle:visible').click();
   });
 
-  if (typeof FB === "undefined") {
-    window.fbAsyncInit = initFB;
-  } else {
-    FB.XFBML.parse();
-    //Hack to make the FB like button always show..
-    Meteor.setTimeout(function() {
-      $(".fb-like").find("span").css("width", "120px").css("height", "20px");
-      $(".fb-like").find("iframe").css("width", "120px").css("height", "20px");
-    }, 2000);
-  }
-
   var cbpAnimatedHeader = (function () {
     var docElem = document.documentElement,
       header = document.querySelector('.navbar-fixed-top'),
@@ -67,11 +56,3 @@ Template.home.rendered = function () {
 
   })();
 };
-
-function initFB() {
-  FB.init({
-    appId: '826601937360527', // App ID from the App Dashboard
-    status: false, // check the login status upon init?
-    xfbml: true  // parse XFBML tags on this page?
-  });
-}

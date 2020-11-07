@@ -1,6 +1,3 @@
 template(name="usersPill")
   each usersOnline
-    if services.facebook
-      span($dyn=userPillClass) #{profile.name}
-    else
-      span($dyn=userPillClass) {{emails.[0].address}}
+    span($dyn=userPillClass) {{emails.[0].address}}
