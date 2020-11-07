@@ -17,7 +17,6 @@ ian:accounts-ui-bootstrap-3
 mrt:moment
 coffeescript
 chfritz:easycron
-sanjo:jasmine
 velocity:html-reporter
 lookback:tooltips
 joshowens:shareit
