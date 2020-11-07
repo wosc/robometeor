@@ -4,17 +4,12 @@ Router.configure({
 
 Meteor.startup(function() {
   document.title = "RoboRally online!";
-
-  if (Meteor.settings && Meteor.settings.public.mixpanelEnabled) {
-    mixpanel.init('2ea215e4a5be057fa7ec3dd2a0e2100a');
-  }
 });
 
 Router.route('/', {
   name: 'home.page',
   layoutTemplate: 'home',
   action: function() {
-    mixpanel.track("Viewed home Page");
     this.render();
   }
 });
@@ -29,7 +24,6 @@ Router.route('/online', {
   },
 
   action: function() {
-    mixpanel.track("Viewed game list Page");
     this.render('gameList');
     this.render('gameItemPostForm', {to: 'rightPanel'});
     this.render('chat', {
@@ -50,7 +44,6 @@ Router.route('/ranking', {
   },
 
   action: function() {
-    mixpanel.track("Viewed ranking list Page");
     this.render('ranking', {
       data: function() {
         return {
@@ -78,7 +71,6 @@ Router.route('/select/:_id', {
   },
 
   action: function() {
-    mixpanel.track("Viewed change board Page");
     this.render('boardselect', {
       data: function() {
         var game = Games.findOne(this.params._id);

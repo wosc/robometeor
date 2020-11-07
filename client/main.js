@@ -16,12 +16,6 @@ Meteor.startup(function() {
     if (! user)
       return;
 
-    mixpanel.people.set({
-      name: getUsername(user),
-      email: user.services && user.services.facebook ? user.services.facebook.email : user.emails[0].address
-    });
-    mixpanel.identify(user._id);
-
     c.stop();
   });
 });

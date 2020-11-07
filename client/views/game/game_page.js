@@ -45,7 +45,6 @@ Template.gamePageActions.events({
     Meteor.call('startGame', this._id, function(error) {
       if (error)
         return alert(error.reason);
-      mixpanel.track("game-started", {name: game.name, author: game.author, boardId: game.boardId});
     });
   }
 });
