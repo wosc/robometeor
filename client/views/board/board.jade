@@ -4,9 +4,6 @@ template(name="board")
       h3 Game over
       hr.star-well
       h4 #{game.winner} has won the game!
-      p.share
-        | Thank you for playing, please share this game with your friends:
-        +share
       if inGame
         a.btn.btn-danger.cancel Leave game
 
@@ -44,7 +41,3 @@ template(name="board")
     if announceMove
       with cardPlaying
         .card(style=position, class="fadeInAndOut #{type} #{class}")
-
-
-template(name="share")
-  +shareit shareData
