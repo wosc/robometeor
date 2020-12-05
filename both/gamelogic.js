@@ -296,7 +296,6 @@ GameLogic = {
       else
         player.damage = 2;
 
-      player.lives--;
       player.needsRespawn=true;
       player.optionalInstantPowerDown=true;
       player.optionCards = {};

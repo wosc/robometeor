@@ -11,8 +11,6 @@ template(name="cards")
       h5.player-status
         img(class="robot-icon", src="/robots/robot_#{robotId}.png")
         | Your robot:
-        each lives
-          span.glyphicon(class=this, data-tooltip-direction="n" data-tooltip="You lose a live when falling off the board, into a hole or when receiving your 10th damage. At 0 lives you will lose the game.")
         br
         span.small(style="color: #fff")
           | #{dmgPercentage}% damaged
@@ -59,8 +57,6 @@ template(name="playerStatus")
   h5.player-status
     img(class="robot-icon", src="/robots/robot_#{robotId}.png")
     | #{playerName}:
-    each lives
-      span.glyphicon(class=this, data-tooltip-direction="top" data-tooltip="You lose a live when falling off the board, into a hole or when receiving your 10th damage. At 0 lives you will lose the game.")
     br
     span.small(style="color: #fff")
       | #{dmgPercentage}% damaged
