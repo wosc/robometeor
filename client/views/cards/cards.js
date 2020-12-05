@@ -1,4 +1,3 @@
-var timerHandle = null;
 Template.cards.helpers({
   player: function() {
     return Players.findOne({userId: Meteor.userId()});
@@ -25,39 +24,6 @@ Template.cards.helpers({
   },
   showPlayButton: function() {
     return !getPlayer().submitted;
-  },
-  timer: function() {
-    if (this.game.timer === 1 && timerHandle === null) {
-      $.titleAlert("Hurry up! 30 seconds left!", { duration: 2000 });
-
-      console.log("starting timer");
-      Session.set("timeLeft", GameLogic.TIMER);
-      timerHandle = Meteor.setInterval(function() {
-        Session.set("timeLeft", Math.max(0, Session.get("timeLeft") - 1));
-      }, 1000);
-      if (!Players.findOne({userId: Meteor.userId()}).submitted)
-        $(document).find('.col-md-4.well').addClass('countdown');
-    }
-    if (this.game.timer === 0) {
-      console.log("game timer = 0");
-      submitCards(this.game);
-      Session.set("timeLeft", 0);
-      Meteor.clearInterval(timerHandle);
-      timerHandle = null;
-    }
-    if (timerHandle &&  Session.get("timeLeft") <= 5 && !getPlayer().submitted)  {
-      $(document).find('.col-md-4.well').removeClass('countdown');
-      $(document).find('.col-md-4.well').addClass('finish');
-    }
-    if (this.game.timer === -1) {
-      console.log("game timer = -1");
-      Session.set("timeLeft", 0);
-      Meteor.clearInterval(timerHandle);
-      timerHandle = null;
-    }
-
-    var timeLeft = Session.get("timeLeft") || 0;
-    return  timeLeft > 0 ? "("+ timeLeft +")" : "";
   },
   gameState: function() {
     switch (this.game.gamePhase) {
@@ -176,13 +142,6 @@ Template.card.helpers({
   },
   selected: function() {
     return this.slot === getSlotIndex() ? 'selected' : '';
-  },
-  isSelected: function() {
-    return this.slot === getSlotIndex();
-  },
-  timer: function() {
-    var timeLeft = Session.get("timeLeft") || 0;
-    return timeLeft > 0 ? "("+ timeLeft +")" : "";
   }
 });
 

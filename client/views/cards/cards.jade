@@ -1,5 +1,5 @@
 template(name="cards")
-  h3 #{gameState} #{timer}
+  h3 #{gameState}
   hr.star-well
   if showCards
     h5
@@ -96,8 +96,6 @@ template(name="playerStatus")
 template(name="card")
   if emptyCard
     .card(class="empty #{selected}")
-      if isSelected
-        .cardTimer #{timer}
   else if coveredCard
     .card(class="covered")
   else if dmgCard

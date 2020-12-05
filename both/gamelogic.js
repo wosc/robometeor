@@ -5,7 +5,6 @@ GameLogic = {
   LEFT: 3,
   OFF: 4,
   ON: 5,
-  TIMER: 30,
   CARD_SLOTS: 5
 };
 
