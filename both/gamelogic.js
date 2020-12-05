@@ -291,11 +291,7 @@ GameLogic = {
   function checkRespawnsAndUpdateDb(player, callback) {
     console.log(player.name+" Player.position "+player.position.x+","+player.position.y+" "+player.isOnBoard()+"|"+player.isOnVoid());
     if (!player.needsRespawn && (!player.isOnBoard() || player.isOnVoid() || player.damage > 9 )) {
-      if (player.hasOptionCard('superior_archive'))
-        player.damage = 0;
-      else
-        player.damage = 2;
-
+      player.damage = 0;
       player.needsRespawn=true;
       player.optionalInstantPowerDown=true;
       player.optionCards = {};
