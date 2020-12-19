@@ -292,6 +292,9 @@ GameLogic = {
     console.log(player.name+" Player.position "+player.position.x+","+player.position.y+" "+player.isOnBoard()+"|"+player.isOnVoid());
     if (!player.needsRespawn && (!player.isOnBoard() || player.isOnVoid() || player.damage > 9 )) {
       player.damage = 0;
+      if (player.powerState !== GameLogic.ON) {
+          player.togglePowerDown();
+      }
       player.needsRespawn=true;
       player.optionalInstantPowerDown=true;
       player.optionCards = {};
