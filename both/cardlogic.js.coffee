@@ -71,14 +71,35 @@ class @CardLogic
     nrOfNewCards = (@_MAX_NUMBER_OF_CARDS - player.damage)
     if player.hasOptionCard('extra_memory')
       nrOfNewCards++
-    #grab card from deck, so it can't be handed out twice
-    handCards.push deck.cards.pop() for i in [1..nrOfNewCards]
+    for attempt in [1..5]
+      #grab card from deck, so it can't be handed out twice
+      handCards.push deck.cards.pop() for i in [1..nrOfNewCards]
+      if haveBothTurnAndStep(handCards, game) || attempt == 5
+        break
+      console.log('Found only turns/steps, redealing')
+      Array.prototype.unshift.apply(deck.cards, handCards)
+      handCards = []
+
     console.log('handCards ' + handCards.length)
 
     Cards.update {playerId: player._id},
       $set:
         handCards: handCards
     Deck.update(deck._id, deck)
+
+  haveBothTurnAndStep = (cards, game) ->
+    if cards.size < 5  # once you have locked slots, you're out of luck anyway
+      return true
+    seen = {'turn': 0, 'step': 0}
+    players = game.playerCnt()
+    for card in cards
+      type = CardLogic.cardType(card, players).name.split('-')
+      if type[0] == 'u'  # yay special cases
+        type[0] = 'turn'
+      seen[type[0]] += 1
+      if seen['turn'] >= 2 and seen['step'] >= 2
+        return true
+    return false
 
   @submitCards: (player) ->
     if (player.isPoweredDown())
