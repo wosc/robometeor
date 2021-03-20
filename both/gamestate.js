@@ -67,14 +67,12 @@ GameState = {
 
 
   function playDealPhase(game) {
-    var dealCards;
     game.players().forEach(function(player) {
-      dealCards = player.lives > 0;
       player.playedCardsCnt = 0;
       player.submitted = false;
       if (player.hasOptionCard('circuit_breaker') && player.damage >= 3)
         player.powerState = GameLogic.DOWN;
-      
+
       if (player.powerState === GameLogic.OFF) {
         // player was powered down last turn
         // -> can choose to stay powered down this turn
@@ -85,15 +83,22 @@ GameState = {
         if (!player.optionalInstantPowerDown) {
           player.submitted = true;
           player.damage = 0;
-          dealCards = false;
         }
       }
-
       Players.update(player._id, player);
-      CardLogic.discardCards(game,player);
-      if (dealCards)
-        CardLogic.dealCards(game, player);
     });
+
+    game.players().forEach(function(player) {
+        CardLogic.discardCards(game,player);
+    });
+    game.players().forEach(function(player) {
+        var dealCards = player.lives > 0;
+        if (player.powerState == GameLogic.OFF && !player.optionalInstantPowerDown)
+            dealCards = false;
+        if (dealCards)
+          CardLogic.dealCards(game, player);
+  });
+
     game.setGamePhase(GameState.PHASE.PROGRAM);
     var notPoweredDownCnt = Players.find({gameId: game._id, submitted: false}).count();
     if (notPoweredDownCnt === 0)
