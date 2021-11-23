@@ -180,7 +180,7 @@ class @CardLogic
     (index+1)*10
 
   @_option_deck = [
-    [ 'superior_archive',  "When reentering play after beeing destroyed, your robot doesn't receive the normal 20% damage" ]
+    # [ 'superior_archive',  "When reentering play after beeing destroyed, your robot doesn't receive the normal 20% damage" ]
     [ 'circuit_breaker',   "If you have 30% or more damage at the end of your turn, your robot will begin the next turn powered down" ]
     [ 'rear-firing_laser', "Your robot has a rear-firing laser in addition to its main laser. This laser follows all the same rules as the main laser" ]
     [ 'extra_memory', "You receive one extra Program card each turn."]
