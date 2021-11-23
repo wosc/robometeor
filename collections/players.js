@@ -161,6 +161,9 @@ var player = {
     var gameId = this.game()._id;
     var optionCards = Deck.findOne({gameId: gameId}).optionCards;
     var optionId = optionCards.pop();
+    if (optionId === undefined) {  // no more option cards available
+      return;
+    }
     this.optionCards[CardLogic.getOptionName(optionId)] = true;
     Deck.update({gameId: gameId}, {$set: {optionCards: optionCards}});
   },
