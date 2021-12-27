@@ -16,6 +16,8 @@ Meteor.startup(function() {
     if (! user)
       return;
 
+    Session.set('audio', user.profile.audio);
+
     c.stop();
   });
 });

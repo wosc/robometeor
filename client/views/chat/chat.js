@@ -6,8 +6,11 @@ Template.chat.helpers({
   timeToStr: function(time)
   {	  
 	return moment(new Date(time)).format("L LT");
+  },
+
+  audio: function() {
+      return Session.get('audio') ? "on" : "off";
   }
-  
 });
 
 Template.chat.events({
@@ -41,6 +44,14 @@ Template.chat.events({
       Router.go('gamelist.page');
     }
   },
+  'click .audio': function() {
+      var value = !Session.get('audio');
+      Meteor.call('setAudio', value, function(error) {
+          if (error) alert(error.reason);
+      });
+      // could probably update via reactivity, but I don't understand it enough
+      Session.set('audio', value);
+  }
 });
 
 Template.chat.rendered = function() {

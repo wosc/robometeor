@@ -48,6 +48,7 @@ Template.board.helpers({
     var startOffset = 5;
     var s = [];
     if (this.game.playPhase === GameState.PLAY_PHASE.CHECKPOINTS) {
+      if (Session.get('audio')) new Audio("/laser.mp3").play();
       this.players.forEach(function(player,i) {
         if (!player.isPoweredDown() && !player.needsRespawn) {
           var offsetY;

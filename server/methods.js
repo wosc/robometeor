@@ -196,6 +196,12 @@ Meteor.methods({
     });
     Chat.insert(message);
   },
+  setAudio: function(value) {
+    var user = Meteor.userId();
+    if (!user)
+      throw new Meteor.Error(401, "You need to login to change audio settings");
+    Meteor.users.update(user, {$set: {'profile.audio': value}});
+  },
   selectCard: function(gameId, card, index) {
     var player = Players.findOne({gameId: gameId, userId: Meteor.userId()});
     if (index < player.notLockedCnt())
