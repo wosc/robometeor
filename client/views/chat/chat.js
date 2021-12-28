@@ -1,6 +1,6 @@
 Template.chat.helpers({
   inGame: function() {
-    return Players.findOne({gameId: this.gameId, userId: Meteor.userId(), robotId: {$ne:null}});
+    return inGame(this.gameId);
   },
   
   timeToStr: function(time)
@@ -10,8 +10,21 @@ Template.chat.helpers({
 
   audio: function() {
       return Session.get('audio') ? "on" : "off";
+  },
+
+  canJoin: function() {
+      if (this.gameId == "global") return false;
+      if (inGame(this.gameId)) return false;
+      var game = Games.findOne(this.gameId);
+      if (game.gamePhase == GameState.PHASE.ENDED) return false;
+      var players = Players.find({gameId: this.gameId}).fetch();
+      return players.length <= game.max_player;
   }
 });
+
+function inGame(gameId) {
+    return Players.findOne({gameId: gameId, userId: Meteor.userId(), robotId: {$ne:null}});
+}
 
 Template.chat.events({
   'submit form': function(event) {
@@ -51,6 +64,16 @@ Template.chat.events({
       });
       // could probably update via reactivity, but I don't understand it enough
       Session.set('audio', value);
+  },
+  'click .join': function(e) {
+      e.preventDefault();
+      Meteor.call('joinGame', this.gameId, GameLogic.OFF, function(error) {
+          if (error) {
+              alert(error.reason);
+          } else {
+              window.location.reload();
+          }
+      });
   }
 });
 

@@ -38,7 +38,7 @@ Meteor.methods({
       message: 'Game created',
       submitted: new Date().getTime()
     });
-    Meteor.call('joinGame', gameId, function(error) {
+    Meteor.call('joinGame', gameId, GameLogic.ON, function(error) {
       if (error) {
         return alert(error.reason);
       }
@@ -46,7 +46,7 @@ Meteor.methods({
 
     return gameId;
   },
-  joinGame: function(gameId) {
+  joinGame: function(gameId, powerState) {
     var user = Meteor.user();
 
     if (!user)
@@ -66,7 +66,7 @@ Meteor.methods({
         damage: 0,
         visited_checkpoints: 0,
         needsRespawn: false,
-        powerState: GameLogic.ON,
+        powerState: powerState,
         optionalInstantPowerDown: false,
         position: {x: -1, y: -1},
         chosenCardsCnt: 0,
@@ -80,6 +80,22 @@ Meteor.methods({
         chosenCards: Array.apply(null, new Array(GameLogic.CARD_SLOTS)).map(function (x, i) { return CardLogic.EMPTY; }),
         handCards: []
       });
+
+      if (powerState === GameLogic.OFF) {
+          // XXX copy&paste from startGame(), but only for the joined player
+          var players = Players.find({gameId: gameId}).fetch();
+          for (var i in players) {
+              var player = players[i];
+              if (player._id != playerId) continue;
+              var start = game.board().startpoints[i];
+              player.position.x = start.x;
+              player.position.y = start.y;
+              player.direction = start.direction;
+              player.robotId = i;
+              player.start = start;
+              Players.update(player._id, player);
+          }
+      }
     }
     game.chat(author + ' joined the game', gameId);
     return true;

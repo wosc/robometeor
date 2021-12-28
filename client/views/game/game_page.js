@@ -24,7 +24,7 @@ Template.gamePageActions.events({
   'click .join': function(e) {
     e.preventDefault();
 
-    Meteor.call('joinGame', this._id, function(error) {
+    Meteor.call('joinGame', this._id, GameLogic.ON, function(error) {
       if (error)
         return alert(error.reason);
     });
