@@ -189,6 +189,9 @@ Template.playerStatus.helpers({
   powerDownPlayed: function() {
     return (this.powerState == GameLogic.DOWN);
   },
+  showRemoveButton: function() {
+    return this.game().gamePhase != GameState.PHASE.ENDED;
+  },
   hasOptionCards: function() {
     return (Object.keys(this.optionCards).length > 0);
   },
@@ -202,6 +205,19 @@ Template.playerStatus.helpers({
     });
     return r;
   }
+});
+
+Template.playerStatus.events({
+    'click .remove': function(e) {
+        var data = e.target.dataset;
+        if (confirm("Really remove player '" + data.username + "' from the game?")) {
+            Meteor.call('leaveGame', data.gameid, data.userid, function(error) {
+                if (error) {
+                    alert(error.reason);
+                }
+            });
+        }
+    }
 });
 
 Template.card.events({

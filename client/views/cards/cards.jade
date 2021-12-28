@@ -57,6 +57,8 @@ template(name="playerStatus")
   h5.player-status
     img(class="robot-icon", src="/robots/robot_#{robotId}.png")
     | #{playerName}:
+    if showRemoveButton
+      a.btn.btn-secondary.remove(data-userid=this.userId data-gameid=this.gameId data-username=playerName) [Remove]
     br
     span.small(style="color: #fff")
       | #{dmgPercentage}% damaged

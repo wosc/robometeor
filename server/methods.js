@@ -85,8 +85,12 @@ Meteor.methods({
     return true;
   },
 
-  leaveGame: function(gameId) {
-    var user = Meteor.user();
+  leaveGame: function(gameId, user) {
+    if (user === undefined) {
+        user = Meteor.user();
+    } else {
+        user = Meteor.users.findOne(user);
+    }
     if (!user)
       throw new Meteor.Error(401, "You need to login to leave a game");
     var game = Games.findOne(gameId);
