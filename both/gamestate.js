@@ -24,10 +24,10 @@ GameState = {
 };
 
 (function (scope) {
-  var _NEXT_PHASE_DELAY = 500;
-  var _ANNOUNCE_NEXT_PHASE = 1000;
-  var _ANNOUNCE_CARD_TIME = 2000;
-  var _EXECUTE_CARD_TIME = 2000;
+  var _NEXT_PHASE_DELAY = 250;
+  var _ANNOUNCE_NEXT_PHASE = 500;
+  var _ANNOUNCE_CARD_TIME = 500;
+  var _EXECUTE_CARD_TIME = 500;
 
   // game phases:
 
