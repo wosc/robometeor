@@ -35,32 +35,6 @@ Router.route('/online', {
   }
 });
 
-Router.route('/ranking', {
-  name: 'ranking.page',
-  loadingTemplate: 'loading',
-
-  waitOn: function() {
-    return [Meteor.subscribe('highscores'), Meteor.subscribe('chat', "global")];
-  },
-
-  action: function() {
-    this.render('ranking', {
-      data: function() {
-        return {
-          mostPlayed: Highscores.find({type: 'mostPlayed'}),
-          mostWon: Highscores.find({type: 'mostWon'})
-        };
-      }
-    });
-    this.render('chat', {
-      to: 'rightPanel',
-      data: function() {
-        return {messages: Chat.find(), gameId: "global"};
-      }
-    });
-  }
-});
-
 Router.route('/select/:_id', {
   name: 'boardselect.page',
   loadingTemplate: 'loading',

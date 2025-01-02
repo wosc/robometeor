@@ -18,7 +18,3 @@ Meteor.publish("players", function(gameId) {
 Meteor.publish("cards", function(gameId) {
   return Cards.find({ gameId: gameId, userId: this.userId });
 });
-
-Meteor.publish("highscores", function() {
-  return Highscores.find();
-});
