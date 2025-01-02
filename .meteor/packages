@@ -15,7 +15,6 @@ ian:accounts-ui-bootstrap-3
 mrt:moment
 coffeescript
 chfritz:easycron
-velocity:html-reporter
 lookback:tooltips
 spiderable
 marcelpanse:jquery-titlealert
