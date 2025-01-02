@@ -6,7 +6,9 @@
 accounts-password
 mizzao:bootstrap-3
 iron:router
-mizzao:user-status
+# https://github.com/Meteor-Community-Packages/meteor-user-status/pull/183
+mizzao:user-status@2.0.0-rc.2
+mizzao:timesync@1.0.0-beta.0
 mquandalle:jade
 linto:fontawesome
 fourseven:scss
