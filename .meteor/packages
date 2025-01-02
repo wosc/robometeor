@@ -16,7 +16,6 @@ mrt:moment
 coffeescript
 chfritz:easycron
 lookback:tooltips
-spiderable
 marcelpanse:jquery-titlealert
 meteorhacks:aggregate
 meteor-base
