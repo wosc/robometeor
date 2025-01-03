@@ -21,31 +21,34 @@ Template.gamePageActions.events({
       Router.go('gamelist.page');
     }
   },
-  'click .join': function(e) {
+  'click .join': async function(e) {
     e.preventDefault();
 
-    Meteor.call('joinGame', this._id, GameLogic.ON, function(error) {
-      if (error)
-        return alert(error.reason);
-    });
+    try {
+      await Meteor.callAsync('joinGame', this._id, GameLogic.ON);
+    } catch (e) {
+        alert(e);
+    }
   },
-  'click .leave': function(e) {
+  'click .leave': async function(e) {
     e.preventDefault();
 
-    Meteor.call('leaveGame', this._id, function(error) {
-      if (error)
-        return alert(error.reason);
-    });
+    try {
+      await Meteor.callAsync('leaveGame', this._id);
+    } catch (e) {
+        alert(e);
+    }
   },
 
-  'click .start': function(e) {
+  'click .start': async function(e) {
     e.preventDefault();
 
     var game = this;
-    Meteor.call('startGame', this._id, function(error) {
-      if (error)
-        return alert(error.reason);
-    });
+    try {
+      await Meteor.callAsync('startGame', this._id);
+    } catch (e) {
+        alert(e);
+    }
   }
 });
 

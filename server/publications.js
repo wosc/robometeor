@@ -2,8 +2,8 @@ Meteor.publish('games', function() {
   return Games.find({}, {limit: 10, sort: {submitted: -1}});
 });
 
-Meteor.publish('chat', function(gameId) {
-  var size = Math.max(0, Chat.find({gameId: gameId}).count() - 100);
+Meteor.publish('chat', async function(gameId) {
+  var size = Math.max(0, await Chat.find({gameId: gameId}).countAsync() - 100);
   return Chat.find({ gameId: gameId }, {skip: size});
 });
 

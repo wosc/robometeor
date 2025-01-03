@@ -1,6 +1,6 @@
 Meteor.methods({
-  createGame: function(postAttributes) {
-    var user = Meteor.user();
+  createGame: async function(postAttributes) {
+    var user = await Meteor.userAsync();
 
     // ensure the user is logged in
     if (!user)
@@ -31,34 +31,30 @@ Meteor.methods({
 
     game.min_player = BoardBox.getBoard(board_id).min_player;
     game.max_player = BoardBox.getBoard(board_id).max_player;
-    var gameId = Games.insert(game);
+    var gameId = await Games.insertAsync(game);
 
-    Chat.insert({
+    await Chat.insertAsync({
       gameId: gameId,
       message: 'Game created',
       submitted: new Date().getTime()
     });
-    Meteor.call('joinGame', gameId, GameLogic.ON, function(error) {
-      if (error) {
-        return alert(error.reason);
-      }
-    });
+    await Meteor.callAsync('joinGame', gameId, GameLogic.ON);
 
     return gameId;
   },
-  joinGame: function(gameId, powerState) {
-    var user = Meteor.user();
+  joinGame: async function(gameId, powerState) {
+    var user = await Meteor.userAsync();
 
     if (!user)
       throw new Meteor.Error(401, "You need to login to join a game");
-    var game = Games.findOne(gameId);
+    var game = await Games.findOneAsync(gameId);
     if (!game)
       throw new Meteor.Error(401, "Game id not found!");
 
     var author = getUsername(user);
     var playerId;
-    if (!Players.findOne({gameId: gameId, userId: user._id})) {
-      playerId = Players.insert({
+    if (!await Players.findOneAsync({gameId: gameId, userId: user._id})) {
+      playerId = await Players.insertAsync({
         gameId: gameId,
         userId: user._id,
         name: author,
@@ -73,7 +69,7 @@ Meteor.methods({
         optionCards: {},
         cards: Array.apply(null, new Array(GameLogic.CARD_SLOTS)).map(function (x, i) { return CardLogic.EMPTY; })
       });
-      Cards.insert({
+      await Cards.insertAsync({
         gameId: gameId,
         playerId: playerId,
         userId: user._id,
@@ -83,7 +79,7 @@ Meteor.methods({
 
       if (powerState === GameLogic.OFF) {
           // XXX copy&paste from startGame(), but only for the joined player
-          var players = Players.find({gameId: gameId}).fetch();
+          var players = await Players.find({gameId: gameId}).fetchAsync();
           for (var i in players) {
               var player = players[i];
               if (player._id != playerId) continue;
@@ -93,7 +89,7 @@ Meteor.methods({
               player.direction = start.direction;
               player.robotId = i;
               player.start = start;
-              Players.update(player._id, player);
+              await Players.updateAsync(player._id, player);
           }
       }
     }
@@ -101,15 +97,15 @@ Meteor.methods({
     return true;
   },
 
-  leaveGame: function(gameId, user) {
+  leaveGame: async function(gameId, user) {
     if (user === undefined) {
-        user = Meteor.user();
+        user = await Meteor.userAsync();
     } else {
-        user = Meteor.users.findOne(user);
+        user = await Meteor.users.findOneAsync(user);
     }
     if (!user)
       throw new Meteor.Error(401, "You need to login to leave a game");
-    var game = Games.findOne(gameId);
+    var game = await Games.findOneAsync(gameId);
     if (!game)
       throw new Meteor.Error(401, "Game id not found!");
 
@@ -117,22 +113,22 @@ Meteor.methods({
     console.log('User ' + author + ' leaving game ' + gameId);
 
 
-    Players.remove({gameId: game._id, userId: user._id});
+    await Players.removeAsync({gameId: game._id, userId: user._id});
     if (game.started) {
-      var players = Players.find({gameId: game._id}).fetch();
+      var players = await Players.find({gameId: game._id}).fetchAsync();
       if (players.length === 1) {
-        Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: players[0].name, stopped: new Date().getTime()}});
+        await Games.updateAsync(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: players[0].name, stopped: new Date().getTime()}});
       } else if (players.length === 0) {
         console.log("Nobody left in the game.");
-        Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: "Nobody", stopped: new Date().getTime()}});
+        await Games.updateAsync(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: "Nobody", stopped: new Date().getTime()}});
       }
     }
     game.chat(author + ' left the game');
   },
 
-  selectBoard: function(boardName, gameId) {
-    var user = Meteor.user();
-    var game = Games.findOne(gameId);
+  selectBoard: async function(boardName, gameId) {
+    var user = await Meteor.userAsync();
+    var game = await Games.findOneAsync(gameId);
     if (!game)
       throw new Meteor.Error(401, "Game id not found!");
 
@@ -142,15 +138,15 @@ Meteor.methods({
 
     var min = BoardBox.getBoard(board_id).min_player;
     var max = BoardBox.getBoard(board_id).max_player;
-    Games.update(game._id, {$set: {boardId: board_id, min_player: min, max_player: max}});
+    await Games.updateAsync(game._id, {$set: {boardId: board_id, min_player: min, max_player: max}});
 
     var author = getUsername(user);
     game.chat(author + ' selected board ' + boardName, 'for game' + gameId);
   },
 
-  startGame: function(gameId) {
-    var players = Players.find({gameId: gameId}).fetch();
-    var game = Games.findOne(gameId);
+  startGame: async function(gameId) {
+    var players = await Players.find({gameId: gameId}).fetchAsync();
+    var game = await Games.findOneAsync(gameId);
     if (players.length > game.max_player) {
       throw new Meteor.Error(401, "Too many players.");
     }
@@ -163,45 +159,45 @@ Meteor.methods({
       player.direction = start.direction;
       player.robotId = i;
       player.start = start;
-      Players.update(player._id, player);
+      await Players.updateAsync(player._id, player);
     }
     game.chat('Game started');
-    GameState.nextGamePhase(gameId);
+    await GameState.nextGamePhase(gameId);
   },
 
-  playCards: function(gameId) {
-    var player = Players.findOne({gameId: gameId, userId: Meteor.userId()});
+  playCards: async function(gameId) {
+    var player = await Players.findOneAsync({gameId: gameId, userId: Meteor.userId()});
     if (!player)
       throw new Meteor.Error(401, 'Game/Player not found! ' + attributes.gameId);
 
     if (!player.submitted) {
-      CardLogic.submitCards(player);
+      await CardLogic.submitCards(player);
       player.chat('submitted cards');
     } else {
       console.log("Player already submitted his cards.");
     }
   },
 
-  selectRespawnPosition: function(gameId, x, y) {
-    var game = Games.findOne(gameId);
-    var player = Players.findOne({gameId: gameId, userId: Meteor.userId()});
-    GameLogic.respawnPlayerAtPos(player, Number(x), Number(y));
+  selectRespawnPosition: async function(gameId, x, y) {
+    var game = await Games.findOneAsync(gameId);
+    var player = await Players.findOneAsync({gameId: gameId, userId: Meteor.userId()});
+    await GameLogic.respawnPlayerAtPos(player, Number(x), Number(y));
     player.chat('chose position',  '(' +x+ ',' +y+ ')');
-    game.nextRespawnPhase(GameState.RESPAWN_PHASE.CHOOSE_DIRECTION);
+    await game.nextRespawnPhase(GameState.RESPAWN_PHASE.CHOOSE_DIRECTION);
   },
-  selectRespawnDirection: function(gameId, direction) {
-    var game = Games.findOne(gameId);
-    var player = Players.findOne({gameId: gameId, userId: Meteor.userId()});
-    GameLogic.respawnPlayerWithDir(player, Number(direction));
+  selectRespawnDirection: async function(gameId, direction) {
+    var game = await Games.findOneAsync(gameId);
+    var player = await Players.findOneAsync({gameId: gameId, userId: Meteor.userId()});
+    await GameLogic.respawnPlayerWithDir(player, Number(direction));
     player.chat('reentered the race', direction);
-    GameState.nextGamePhase(game);
+    await GameState.nextGamePhase(game);
   },
-  togglePowerDown: function(gameId) {
-     var player = Players.findOne({gameId: gameId, userId: Meteor.userId()});
-     return player.togglePowerDown();
+  togglePowerDown: async function(gameId) {
+     var player = await Players.findOneAsync({gameId: gameId, userId: Meteor.userId()});
+     return await player.togglePowerDown();
   },
-  addMessage: function(postAttributes) {
-    var user = Meteor.user();
+  addMessage: async function(postAttributes) {
+    var user = await Meteor.userAsync();
 
     // ensure the user is logged in
     if (!user)
@@ -214,29 +210,29 @@ Meteor.methods({
       author: author,
       submitted: new Date().getTime()
     });
-    Chat.insert(message);
+    await Chat.insertAsync(message);
   },
-  setAudio: function(value) {
+  setAudio: async function(value) {
     var user = Meteor.userId();
     if (!user)
       throw new Meteor.Error(401, "You need to login to change audio settings");
-    Meteor.users.update(user, {$set: {'profile.audio': value}});
+    await Meteor.users.updateAsync(user, {$set: {'profile.audio': value}});
   },
-  selectCard: function(gameId, card, index) {
-    var player = Players.findOne({gameId: gameId, userId: Meteor.userId()});
+  selectCard: async function(gameId, card, index) {
+    var player = await Players.findOneAsync({gameId: gameId, userId: Meteor.userId()});
     if (index < player.notLockedCnt())
-      player.chooseCard(card,index);
-    return player.getChosenCards();
+      await player.chooseCard(card,index);
+    return await player.getChosenCards();
   },
-  deselectCard: function(gameId, index) {
-    var player = Players.findOne({gameId: gameId, userId: Meteor.userId()});
+  deselectCard: async function(gameId, index) {
+    var player = await Players.findOneAsync({gameId: gameId, userId: Meteor.userId()});
     if (index < player.notLockedCnt())
-      player.unchooseCard(index);
-    return player.getChosenCards();
+      await player.unchooseCard(index);
+    return await player.getChosenCards();
   },
-  deselectAllCards: function(gameId) {
-    var player = Players.findOne({gameId: gameId, userId: Meteor.userId()});
+  deselectAllCards: async function(gameId) {
+    var player = await Players.findOneAsync({gameId: gameId, userId: Meteor.userId()});
     for (i=0;i<player.notLockedCnt();i++)
-      player.unchooseCard(i);
+      await player.unchooseCard(i);
   },
 });

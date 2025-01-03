@@ -208,20 +208,20 @@ Template.playerStatus.helpers({
 });
 
 Template.playerStatus.events({
-    'click .remove': function(e) {
+    'click .remove': async function(e) {
         var data = e.target.dataset;
         if (confirm("Really remove player '" + data.username + "' from the game?")) {
-            Meteor.call('leaveGame', data.gameid, data.userid, function(error) {
-                if (error) {
-                    alert(error.reason);
-                }
-            });
+            try {
+              await Meteor.callAsync('leaveGame', data.gameid, data.userid);
+            } catch (e) {
+                alert(e);
+            }
         }
     }
 });
 
 Template.card.events({
-  'click .available': function(e) {
+  'click .available': async function(e) {
     var currentSlot = getSlotIndex();
     if ($(e.currentTarget).css("opacity") == 1 && isEmptySlot(currentSlot)) {
       $(e.currentTarget).css("opacity", "0.3");
@@ -235,12 +235,14 @@ Template.card.events({
         console.log("choose card ",this.cardId,' for slot ', getSlotIndex());
 
         if (player.isPoweredDown())
-          Meteor.call('togglePowerDown', player.gameId, function(error, powerState) {
-            if (error)
-              return alert(error.reason);
-            $(".playBtn").toggleClass("disabled", !allowSubmit());
-          });
-      } else {
+          try {
+            await Meteor.callAsync('togglePowerDown', player.gameId);
+          } catch (e) {
+              alert(e);
+              return;
+          }
+          $(".playBtn").toggleClass("disabled", !allowSubmit());
+       } else {
         $(e.currentTarget).css("opacity", "1");
         Session.set("selectedSlot", currentSlot);
       }
@@ -268,22 +270,24 @@ Template.card.events({
 });
 
 Template.cards.events({
-  'click .playBtn': function(e) {
-    submitCards(this.game);
+  'click .playBtn': async function(e) {
+    await submitCards(this.game);
   },
-  'click .powerBtn': function(e) {
-    Meteor.call('togglePowerDown', this.game._id, function(error, powerState) {
-      if (error)
-        return alert(error.reason);
-      if (powerState == GameLogic.OFF) {
-        this.chosenCards.forEach(function(item) {
-          if (item.type !== 'empty')
-            $('.available.' + item.cardId).show();
-        });
-        unchooseAllCards(getPlayer());
-      }
-      $(".playBtn").toggleClass("disabled", !allowSubmit());
-    });
+  'click .powerBtn': async function(e) {
+    try {
+      var powerState = await Meteor.callAsync('togglePowerDown', this.game._id);
+    } catch (e) {
+        alert(e);
+        return;
+    }
+    if (powerState == GameLogic.OFF) {
+      this.chosenCards.forEach(function(item) {
+        if (item.type !== 'empty')
+          $('.available.' + item.cardId).show();
+      });
+      unchooseAllCards(getPlayer());
+    }
+    $(".playBtn").toggleClass("disabled", !allowSubmit());
   }
 });
 
@@ -291,29 +295,30 @@ function getPlayer() {
     return Players.findOne({userId: Meteor.userId()});
 }
 
-function chooseCard(gameId, card, slot) {
-  Meteor.call('selectCard', gameId, card, slot, function(error, chosenCards) {
-    if (error)
-      return alert(error.reason);
-    $(".playBtn").toggleClass("disabled", !allowSubmit());
-  });
+async function chooseCard(gameId, card, slot) {
+  try {
+    await Meteor.callAsync('selectCard', gameId, card, slot);
+  } catch (e) {
+      alert(e);
+  }
 }
 
-function unchooseCard(gameId, slot) {
-  Meteor.call('deselectCard', gameId, slot, function(error, chosenCards) {
-    if (error)
-      return alert(error.reason);
-    $(".playBtn").toggleClass("disabled", !allowSubmit());
-  });
+async function unchooseCard(gameId, slot) {
+  try {
+    await Meteor.callAsync('deselectCard', gameId, slot);
+  } catch (e) {
+      alert(e);
+  }
 }
 
-function unchooseAllCards(player) {
+async function unchooseAllCards(player) {
   Session.set("selectedSlot", 0);
   initEmptySlots();
-  Meteor.call('deselectAllsCards', player.gameId, function(error) {
-    if (error)
-      return alert(error.reason);
-  });
+  try {
+    await Meteor.callAsync('deselectAllsCards', player.gameId);
+  } catch (e) {
+      alert(e);
+  }
 }
 
 function getChosenCnt() {
@@ -366,16 +371,18 @@ function allowSubmit() {
   return getChosenCnt() == 5 || getPlayer().isPoweredDown();
 }
 
-function submitCards(game) {
+async function submitCards(game) {
   var chosenCards = this.chosenCards;
   console.log("submitting cards", chosenCards);
   $(document).find('.col-md-4.well').removeClass('countdown').removeClass('finish');
-  Meteor.call('playCards',  game._id, function(error) {
-    Session.set("selectedSlot", 0);
-    Session.set("emptySlots",false);
-    if (error)
-      return alert(error.reason);
-  });
+  try {
+    await Meteor.callAsync('playCards',  game._id);
+  } catch (e) {
+      alert(e);
+      return;
+  }
+  Session.set("selectedSlot", 0);
+  Session.set("emptySlots",false);
 }
 
 function addUIData(cards, available, locked, selectable) {

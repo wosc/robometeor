@@ -332,29 +332,33 @@ function calcPosition(x, y, offsetX, offsetY) {
 }
 
 Template.board.events({
-  'click .cancel': function() {
+  'click .cancel': async function() {
     if (this.game.gamePhase != GameState.PHASE.ENDED) {
       if (confirm("If you leave, you will forfeit the game, are you sure you want to give up?")) {
-        Meteor.call('leaveGame', this.game._id, function(error) {
-          if (error)
-            alert(error.reason);
-          Router.go('gamelist.page');
-        });
+        try {
+          await Meteor.callAsync('leaveGame', this.game._id);
+        } catch (e) {
+            alert(e);
+            return;
+        }
+        Router.go('gamelist.page');
       }
     } else {
       Router.go('gamelist.page');
     }
   },
-  'click .position-select': function(e) {
-    Meteor.call('selectRespawnPosition', this.gameId, $(e.target).attr('data-x'), $(e.target).attr('data-y'), function(error) {
-      if (error)
-        alert(error.reason);
-    });
+  'click .position-select': async function(e) {
+    try {
+      await Meteor.callAsync('selectRespawnPosition', this.gameId, $(e.target).attr('data-x'), $(e.target).attr('data-y'));
+    } catch (e) {
+        alert(e);
+    }
   },
-  'click .direction-select': function(e) {
-    Meteor.call('selectRespawnDirection', this.gameId, $(e.target).attr('data-dir'), function(error) {
-      if (error)
-        alert(error.reason);
-    });
+  'click .direction-select': async function(e) {
+    try {
+      await Meteor.callAsync('selectRespawnDirection', this.gameId, $(e.target).attr('data-dir'));
+    } catch (e) {
+        alert(e);
+    }
   }
 });

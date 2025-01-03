@@ -2,17 +2,18 @@ game =
   board: () ->
     BoardBox.getBoard(this.boardId)
   players: () ->
-    Players.find({gameId: this._id}).fetch()
+    Players.find({gameId: this._id}).fetchAsync()
   playerCnt: () ->
-    Players.find({gameId: this._id}).count()
+    await Players.find({gameId: this._id}).countAsync()
   isPlayerOnTile: (x,y) ->
     found = null
-    for player in this.players()
+    players = await this.players()
+    for player of players
       if (player.position.x == x && player.position.y == y)
         found = player
     return found;
   chat: (msg, debug_info) ->
-    Chat.insert
+    await Chat.insertAsync
       gameId: this._id,
       message: msg,
       submitted: new Date().getTime()
@@ -21,32 +22,32 @@ game =
     console.log(msg)
   nextPlayPhase: (phase) ->
     if phase?
-      this.setPlayPhase(phase)
-    GameState.nextPlayPhase(this._id)
+      await this.setPlayPhase(phase)
+    await GameState.nextPlayPhase(this._id)
   nextGamePhase: (phase) ->
     if phase?
-      this.setGamePhase(phase)
-    GameState.nextGamePhase(this._id)
+      await this.setGamePhase(phase)
+    await GameState.nextGamePhase(this._id)
   nextRespawnPhase: (phase) ->
     if phase?
-      this.setRespawnPhase(phase)
-    GameState.nextRespawnPhase(this._id)
+      await this.setRespawnPhase(phase)
+    await GameState.nextRespawnPhase(this._id)
   setPlayPhase: (phase) ->
-    Games.update this._id,
+    await Games.updateAsync this._id,
       $set:
         playPhase: phase
   setGamePhase: (phase) ->
-    Games.update this._id,
+    await Games.updateAsync this._id,
       $set:
         gamePhase: phase
   setRespawnPhase: (phase) ->
-    Games.update this._id,
+    await Games.updateAsync this._id,
       $set:
         respawnPhase: phase
   getDeck: () ->
-    Deck.findOne({gameId: this._id}) || this.newDeck()
+    await Deck.findOneAsync({gameId: this._id}) || this.newDeck()
   newDeck: () ->
-    deck = if this.playerCnt() <= 8
+    deck = if await this.playerCnt() <= 8
       CardLogic._8_deck
     else
       CardLogic._12_deck
@@ -62,31 +63,31 @@ game =
       discardedOptionCards: []
     }
   startAnnounce: () ->
-    Games.update this._id,
+    await Games.updateAsync this._id,
       $set:
         announce: true
   stopAnnounce: () ->
-    Games.update this._id,
+    await Games.updateAsync this._id,
       $set:
         announce: false
   activePlayers: () ->
-    Players.find
+    await Players.find
       gameId: this._id,
       needsRespawn: false,
       lives: {$gt: 0},
       powerState: {$ne:GameLogic.OFF}
-    .fetch()
+    .fetchAsync()
   livingPlayers: () ->
-    Players.find
+    await Players.find
       gameId: this._id,
       lives: {$gt: 0},
-    .fetch()
+    .fetchAsync()
   playersOnBoard: () ->
-    Players.find
+    await Players.find
       gameId: this._id,
       needsRespawn: false,
       lives: {$gt: 0},
-    .fetch()
+    .fetchAsync()
 
 
 
