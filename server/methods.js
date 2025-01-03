@@ -216,7 +216,7 @@ Meteor.methods({
     var user = Meteor.userId();
     if (!user)
       throw new Meteor.Error(401, "You need to login to change audio settings");
-    await Meteor.users.updateAsync(user, {$set: {'profile.audio': value}});
+    await Meteor.users.updateAsync(user, {$set: {'audio': value}});
   },
   selectCard: async function(gameId, card, index) {
     var player = await Players.findOneAsync({gameId: gameId, userId: Meteor.userId()});

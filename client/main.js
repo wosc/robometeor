@@ -16,7 +16,7 @@ Meteor.startup(function() {
     if (! user)
       return;
 
-    Session.set('audio', user.profile.audio);
+    Session.set('audio', user.audio);
 
     c.stop();
   });
