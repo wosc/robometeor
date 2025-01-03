@@ -12,6 +12,7 @@ mizzao:timesync@1.0.0-beta.0
 mquandalle:jade
 linto:fontawesome
 fourseven:scss
+accounts-ui
 mrt:moment
 coffeescript
 chfritz:easycron
