@@ -25,7 +25,6 @@ RouteController.prototype.dispatch = function (stack, url, done) {
 
   let go = Meteor.promisify(function (stack, self, done) {
     stack.dispatch(url, self, done);
-    console.log('RouteController.prototype.dispatch');
   }, self, true);
   go(stack, self, done);
 };
