@@ -37,7 +37,7 @@ class @CardLogic
   @discardCards: (game, player) ->
     deck = game.getDeck()
 
-    if playerCards = Cards.findOne({playerId: player._id})
+    if playerCards = await Cards.findOneAsync({playerId: player._id})
       for unusedCard in playerCards.handCards
         if unusedCard >= 0
           deck.cards.push unusedCard
@@ -49,22 +49,22 @@ class @CardLogic
         player.cards[i] = @EMPTY
         chosenCards[i] = @EMPTY
 
-      Players.update player._id,
+      await Players.updateAsync player._id,
         $set:
           cards: player.cards
           playedCardsCnt: 0,
           chosenCardsCnt: player.lockedCnt()
-      Cards.update {playerId: player._id},
+      await Cards.updateAsync {playerId: player._id},
         $set:
           handCards: [],
           chosenCards: chosenCards
 
     console.log "Returned cards, new total: "+deck.cards.length
     deck.cards = _.shuffle(deck.cards)
-    Deck.upsert({gameId: game._id}, deck)
+    await Deck.upsertAsync({gameId: game._id}, deck)
 
   @dealCards: (game, player) ->
-    deck = game.getDeck()
+    deck = await game.getDeck()
     handCards = []
 
     #for every damage you get a card less
@@ -82,10 +82,10 @@ class @CardLogic
 
     console.log('handCards ' + handCards.length)
 
-    Cards.update {playerId: player._id},
+    await Cards.updateAsync {playerId: player._id},
       $set:
         handCards: handCards
-    Deck.update(deck._id, deck)
+    await Deck.updateAsync(deck._id, deck)
 
   haveBothTurnAndStep = (cards, game) ->
     if cards.size < 5  # once you have locked slots, you're out of luck anyway
@@ -103,30 +103,30 @@ class @CardLogic
 
   @submitCards: (player) ->
     if (player.isPoweredDown())
-      Players.update player._id,
+      await Players.updateAsync player._id,
         $set:
           submitted: true
           damage: 0
     else
       approvedCards = verifySubmittedCards(player)
 
-      Players.update player._id,
+      await Players.updateAsync player._id,
         $set:
           submitted: true,
           optionalInstantPowerDown: false,
           cards: approvedCards
 
-    playerCnt = Players.find({gameId: player.gameId, lives: {$gt: 0}}).count()
-    readyPlayerCnt = Players.find({gameId: player.gameId, submitted: true, lives: {$gt: 0}}).count()
+    playerCnt = await Players.find({gameId: player.gameId, lives: {$gt: 0}}).countAsync()
+    readyPlayerCnt = await Players.find({gameId: player.gameId, submitted: true, lives: {$gt: 0}}).countAsync()
     if readyPlayerCnt == playerCnt
-      GameState.nextGamePhase(player.gameId)
+      await GameState.nextGamePhase(player.gameId)
 
   verifySubmittedCards = (player) ->
     # check if all played cards are available from original hand...
     # Except locked cards, those are not in the hand.
-    availableCards = player.getHandCards()
-    submittedCards = player.getChosenCards()
-    for card, i in player.notLockedCards()
+    availableCards = await player.getHandCards()
+    submittedCards = await player.getChosenCards()
+    for card, i in await player.notLockedCards()
       found = false
       if card >= 0
         for j in [0..availableCards.length-1]
@@ -146,7 +146,7 @@ class @CardLogic
         submittedCards[i] = cardIdFromHand
         player.cards[i] = CardLogic.RANDOM
 
-    Cards.update({playerId: player._id}, $set:
+    await Cards.update({playerId: player._id}, $set:
       handCards: availableCards
       chosenCards: submittedCards
     )

@@ -1,4 +1,4 @@
-Meteor.users.find({ "status.online": true }).observe({
+Meteor.users.find({ "status.online": true }).observeAsync({
   added: function(user) {
     console.log('came online!');
   },

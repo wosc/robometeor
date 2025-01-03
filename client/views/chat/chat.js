@@ -27,7 +27,7 @@ function inGame(gameId) {
 }
 
 Template.chat.events({
-  'submit form': function(event) {
+  'submit form': async function(event) {
     event.preventDefault();
     var message = {
       gameId: $(event.target).find('[name=gameId]').val(),
@@ -35,7 +35,7 @@ Template.chat.events({
     };
 
     if (message.message.length > 0) {
-      Meteor.call('addMessage', message, function(error) {
+      await Meteor.callAsync('addMessage', message, function(error) {
         if (error)
           return alert(error.reason);
 
@@ -43,11 +43,11 @@ Template.chat.events({
       });
     }
   },
-  'click .cancel': function() {
+  'click .cancel': async function() {
     var game = Games.findOne(this.gameId);
     if (game.gamePhase != GameState.PHASE.ENDED) {
       if (confirm("If you leave, you will forfeit the game, are you sure you want to give up?")) {
-        Meteor.call('leaveGame', game._id, function(error) {
+        await Meteor.callAsync('leaveGame', game._id, function(error) {
           if (error)
             alert(error.reason);
           Router.go('gamelist.page');
@@ -57,17 +57,17 @@ Template.chat.events({
       Router.go('gamelist.page');
     }
   },
-  'click .audio': function() {
+  'click .audio': async function() {
       var value = !Session.get('audio');
-      Meteor.call('setAudio', value, function(error) {
+      await Meteor.callAsync('setAudio', value, function(error) {
           if (error) alert(error.reason);
       });
       // could probably update via reactivity, but I don't understand it enough
       Session.set('audio', value);
   },
-  'click .join': function(e) {
+  'click .join': async function(e) {
       e.preventDefault();
-      Meteor.call('joinGame', this.gameId, GameLogic.OFF, function(error) {
+      await Meteor.callAsync('joinGame', this.gameId, GameLogic.OFF, function(error) {
           if (error) {
               alert(error.reason);
           } else {

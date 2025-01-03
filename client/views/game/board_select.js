@@ -40,14 +40,14 @@ Template.boardselect.helpers({
 });
 
 Template.boardselect.events({
-  'click .board-thumbnail': function(e) {
+  'click .board-thumbnail': async function(e) {
     e.preventDefault();
 
     var gameId = this.gameId;
 
     console.log(gameId);
 
-    Meteor.call('selectBoard', this.board.name, gameId, function(error) {
+    await Meteor.callAsync('selectBoard', this.board.name, gameId, function(error) {
       if (error)
         alert(error.reason);
       Router.go('game.page', {_id: gameId});

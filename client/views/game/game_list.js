@@ -17,13 +17,13 @@ Template.gameItemPostForm.helpers({
 });
 
 Template.gameItemPostForm.events({
-  'submit form': function(event) {
+  'submit form': async function(event) {
     event.preventDefault();
     var game = {
       name: $(event.target).find('[name=name]').val()
     };
 
-    Meteor.call('createGame', game, function(error, id) {
+    await Meteor.callAsync('createGame', game, function(error, id) {
       if (error)
         return alert(error.reason);
       Router.go('game.page', {_id: id});
