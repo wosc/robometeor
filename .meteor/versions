@@ -16,7 +16,6 @@ caching-compiler@2.0.1
 caching-html-compiler@2.0.0
 callback-hook@1.6.0
 check@1.4.4
-chfritz:easycron@0.0.4
 coffeescript@1.0.4-pre.1
 core-runtime@1.0.0
 ddp@1.4.2

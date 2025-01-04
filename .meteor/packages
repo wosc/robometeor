@@ -15,7 +15,6 @@ fourseven:scss
 accounts-ui
 mrt:moment
 coffeescript
-chfritz:easycron
 lookback:tooltips
 marcelpanse:jquery-titlealert
 meteor-base

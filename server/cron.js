@@ -1,5 +1,5 @@
 Meteor.startup(function () {
-  var everyMinute = new Cron(async function() {
+  var everyMinute = async function() {
     //runs every minute and cleans up abandoned games.
     var openGames = await Games.find({started: false}).fetchAsync();
     for (var game of openGames) {
@@ -47,19 +47,21 @@ Meteor.startup(function () {
         }
       }
       //this will wait untill all checks are finished.
-      var handle = Meteor.setInterval(async function() {
+      var setWinner = async function() {
         console.log("waiting for player to come back online..");
         if (nrOfPlayersChecked >= nrOfPlayers) {
           console.log("all players checked, players online: ", playersOnline);
-          Meteor.clearInterval(handle);
           if (playersOnline === 0) {
             await Games.updateAsync(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: "Nobody", stopped: new Date().getTime()}});
           } else if (playersOnline == 1 && game.min_player > 1) {
             await Games.updateAsync(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: lastManStanding.name, stopped: new Date().getTime()}});
           }
-          //else do nothing, game still in progress..
+        } else {
+            //else do nothing, game still in progress..
+            Meteor.setTimeout(setWinner, 1000);
         }
-      }, 1000);
+      };
+      Meteor.setTimeout(setWinner, 1000);
     }
 
     //cleanup inactive users
@@ -67,5 +69,8 @@ Meteor.startup(function () {
     d.setMinutes(d.getMinutes() - 30);
     await Meteor.users.updateAsync({"status.lastActivity": {$lt: d}}, {$set: {"status.online": false}}, {multi: true});
 
-  }, {});
+    Meteor.setTimeout(everyMinute, 60000);
+  };
+
+  Meteor.setTimeout(everyMinute, 60000);
 });
