@@ -237,7 +237,7 @@ GameState = {
       await Games.updateAsync(game._id, {$set: {
           announceCard: null,
         }});
-      Meteor.wrapAsync(GameLogic.playCard)(player, card.cardId);
+      await GameLogic.playCard(player, card.cardId);
       if (game.cardsToPlay.length > 0) {
         Meteor.setTimeout(async function() {
           await playMoveBot(game);
@@ -254,18 +254,17 @@ GameState = {
 
   async function playMoveBoard(game) {
     var players = await game.playersOnBoard();
-    Meteor.wrapAsync(GameLogic.executeRollers)(players);
-    Meteor.wrapAsync(GameLogic.executeExpressRollers)(players);
-    Meteor.wrapAsync(GameLogic.executeGears)(players);
-    Meteor.wrapAsync(GameLogic.executePushers)(players);
-
+    await GameLogic.executeRollers(players);
+    await GameLogic.executeExpressRollers(players);
+    await GameLogic.executeGears(players);
+    await GameLogic.executePushers(players);
     await game.nextPlayPhase(GameState.PLAY_PHASE.LASERS);
   }
 
   async function playLasers(game) {
     var players = await game.playersOnBoard();
     await game.setPlayPhase(GameState.PLAY_PHASE.CHECKPOINTS);
-    Meteor.wrapAsync(GameLogic.executeLasers)(players);
+    await GameLogic.executeLasers(players);
     await game.nextPlayPhase();
   }
 
@@ -284,7 +283,7 @@ GameState = {
 
   async function playRepairs(game) {
     var players = await game.playersOnBoard();
-    Meteor.wrapAsync(GameLogic.executeRepairs)(players);
+    await GameLogic.executeRepairs(players);
     await game.nextGamePhase();
   }
 

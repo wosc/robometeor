@@ -11,134 +11,131 @@ GameLogic = {
 (function (scope) {
   _CARD_PLAY_DELAY = 1000;
 
-  scope.playCard = function(player, card, callback) {
+  scope.playCard = async function(player, card) {
     if (!player.needsRespawn)
       console.log("trying to play next card for player " + player.name);
 
       if (card != CardLogic.EMPTY) {
-        var cardType = CardLogic.cardType(card, player.game().playerCnt());
+        var game = await player.game();
+        var cardType = CardLogic.cardType(card, await game.playerCnt());
         console.log('playing card ' + cardType.name + ' for player ' + player.name);
 
         player.rotate(cardType.direction);
 
         if (cardType.position === 0)
-          Meteor.wrapAsync(checkRespawnsAndUpdateDb)(player);
+          await checkRespawnsAndUpdateDb(player);
         else {
           step = Math.min(cardType.position, 1);
           for (j=0;j < Math.abs(cardType.position);j++) {
             timeout = j+1 < Math.abs(cardType.position) ? 0 : _CARD_PLAY_DELAY;
             // don't delay if there is another step to execute
-            players = Players.find({gameId: player.gameId}).fetch();
-            executeStep(players, player, step);
+            var players = await Players.find({gameId: player.gameId}).fetchAsync();
+            await executeStep(players, player, step);
             if (player.needsRespawn)
               break; // player respawned, don't continue playing out this card.
           }
         }
       } else
         console.log("card is not playable " + card + " player " + player.name);
-
-    callback();
   };
 
-  scope.executeRollers = function(players, callback) {
+  scope.executeRollers = async function(players) {
     var roller_moves = [];
-    players.forEach(function(player) {
+    for (var player of players) {
       //check if is on roller
-      var tile = player.tile();
+      var tile = await player.tile();
       var moving = (tile.type === Tile.ROLLER);
       if (!player.needsRespawn) {
         roller_moves.push(rollerMove(player, tile, moving));
       }
-    });
-    tryToMovePlayersOnRollers(roller_moves);
-    callback();
+    }
+    await tryToMovePlayersOnRollers(roller_moves);
   };
 
   // move players 2nd step in roller direction; 1st step is done by executeRollers,
-  scope.executeExpressRollers = function(players, callback) {
+  scope.executeExpressRollers = async function(players) {
     var roller_moves = [];
-    players.forEach(function(player) {
+    for (var player of players) {
       //check if is on roller
-      var tile = player.tile();
+      var tile = await player.tile();
       var moving  = (tile.type === Tile.ROLLER && tile.speed === 2);
       if (!player.needsRespawn) {
         roller_moves.push(rollerMove(player, tile, moving));
       }
-    });
-    tryToMovePlayersOnRollers(roller_moves);
-    callback();
+    }
+    await tryToMovePlayersOnRollers(roller_moves);
   };
 
-  scope.executeGears = function(players, callback) {
-    players.forEach(function(player) {
-      if (player.tile().type === Tile.GEAR) {
-        player.rotate(player.tile().rotate);
-        Players.update(player._id, player);
+  scope.executeGears = async function(players) {
+    for (var player of players) {
+      var tile = await player.tile();
+      if (tile.type === Tile.GEAR) {
+        player.rotate(tile.rotate);
+        await Players.updateAsync(player._id, player);
       }
-    });
-    callback();
+    }
   };
 
-  scope.executePushers = function(players, callback) {
-    players.forEach(function(player) {
-      var tile = player.tile();
-      if (tile.type === Tile.PUSHER &&  player.game().playPhaseCount % 2 === tile.pusher_type ) {
-        tryToMovePlayer(players, player, tile.move);
+  scope.executePushers = async function(players) {
+    for (var player of players) {
+      var tile = await player.tile();
+      var game = await player.game();
+      if (tile.type === Tile.PUSHER &&  game.playPhaseCount % 2 === tile.pusher_type ) {
+        await tryToMovePlayer(players, player, tile.move);
       }
-    });
-    callback();
+    }
   };
 
-  scope.executeLasers = function(players, callback) {
+  scope.executeLasers = async function(players) {
     var victims = [];
-    players.forEach(function(player) {
-      var tile = player.tile();
+    for (var player of players) {
+      var tile = await player.tile();
       if (tile.damage > 0) {
-        player.addDamage(tile.damage);
-        player.chat('was hit by a laser, total damage: '+ player.damage);
-        checkRespawnsAndUpdateDb(player);
+        await player.addDamage(tile.damage);
+        await player.chat('was hit by a laser, total damage: '+ player.damage);
+        await checkRespawnsAndUpdateDb(player);
       }
       if (!player.isPoweredDown() && !player.needsRespawn) {
-        victims = scope.shootRobotLaser(players, player, victims);
+        await scope.shootRobotLaser(players, player, victims);
         if (player.hasOptionCard('rear-firing_laser')) {
           player.rotate(2);
-          victims = scope.shootRobotLaser(players, player, victims);
+          await scope.shootRobotLaser(players, player, victims);
           player.rotate(2);
         }
-        if (player.hasOptionCard('mini_howitzer') || 
+        var game = await player.game();
+        if (player.hasOptionCard('mini_howitzer') ||
             player.hasOptionCard('fire_control')  ||
             player.hasOptionCard('radio_control') ||
-            (player.hasOptionCard('scrambler') && player.game().playPhaseCount < 5) ||
+            (player.hasOptionCard('scrambler') && game.playPhaseCount < 5) ||
             player.hasOptionCard('tractor_beam')  ||
             player.hasOptionCard('pressor_beam') ) {
           //todo: there is no game state laser options yet..?
-          //player.game().setPlayPhase(GameState.PLAY_PHASE.LASER_OPTIONS);
+          //game.setPlayPhase(GameState.PLAY_PHASE.LASER_OPTIONS);
         }
       }
-    });
-    victims.forEach(function(victim) {
+    }
+    for (var victim of victims) {
       victim.addDamage(1);
-      checkRespawnsAndUpdateDb(victim);
-    });
-    callback();
+      await checkRespawnsAndUpdateDb(victim);
+    }
   };
 
-  scope.executeRepairs = function(players, callback) {
-    players.forEach(function(player) {
-      if (player.tile().repair) {
+  scope.executeRepairs = async function(players) {
+    for (var player of players) {
+      var tile = await player.tile();
+      if (tile.repair) {
         if (player.damage > 0)
           player.damage--;
-        if (player.tile().option)
-          player.drawOptionCard();
-        Players.update(player._id, player);
+        if (tile.option)
+          await player.drawOptionCard();
+        await Players.updateAsync(player._id, player);
       }
-    });
-    callback();
+    }
   };
 
-  scope.shootRobotLaser = function(players, player, victims) {
+  scope.shootRobotLaser = async function(players, player, victims) {
     var step = {x:0, y:0};
-    var board = player.board();
+    var board = await player.board();
     switch (player.direction) {
       case GameLogic.UP:
         step.y = -1;
@@ -167,7 +164,7 @@ GameLogic = {
       if (victim) {
         debug_info = 'Shot: (' + player.position.x +','+player.position.y+') -> ('+x+','+y+')';
         victim.chat('was shot by '+ player.name +', Total damage: '+ (victim.damage+1), debug_info);
-        Players.update(player._id,{$set: {shotDistance:shotDistance}});
+        await Players.updateAsync(player._id,{$set: {shotDistance:shotDistance}});
         victims.push(victim);
         if (player.hasOptionCard('double-barreled_laser'))
           victims.push(victim);
@@ -176,11 +173,10 @@ GameLogic = {
         highPower = false;
       }
     }
-    Players.update(player._id,{$set: {shotDistance:shotDistance}});
-    return victims;
+    await Players.updateAsync(player._id,{$set: {shotDistance:shotDistance}});
   };
 
-  function executeStep(players, player, direction) {   // direction = 1 for step forward, -1 for step backwards
+  async function executeStep(players, player, direction) {   // direction = 1 for step forward, -1 for step backwards
     var step = { x: 0, y: 0 };
     switch (player.direction) {
       case GameLogic.UP:
@@ -196,11 +192,11 @@ GameLogic = {
         step.x = -1 * direction;
         break;
     }
-    tryToMovePlayer(players, player, step);
+    await tryToMovePlayer(players, player, step);
   }
 
-  function tryToMovePlayer(players, p, step) {
-    var board = p.board();
+  async function tryToMovePlayer(players, p, step) {
+    var board = await p.board();
     var makeMove = true;
     if (step.x !== 0 || step.y !== 0) {
       console.log("trying to move player "+p.name+" to "+ (p.position.x+step.x)+","+(p.position.y+step.y));
@@ -209,14 +205,14 @@ GameLogic = {
         var pushedPlayer = isPlayerOnTile(players, p.position.x + step.x, p.position.y + step.y);
         if (pushedPlayer !== null) {
           console.log("trying to push player "+pushedPlayer.name);
-          if (p.hasOptionCard('ramming_gear')) 
-            pushedPlayer.addDamage(1);
-          makeMove=tryToMovePlayer(players, pushedPlayer, step);
+          if (p.hasOptionCard('ramming_gear'))
+            await pushedPlayer.addDamage(1);
+          makeMove = await tryToMovePlayer(players, pushedPlayer, step);
         }
         if(makeMove) {
           console.log("moving player "+p.name+" to "+ (p.position.x+step.x)+","+(p.position.y+step.y));
           p.move(step);
-          Meteor.wrapAsync(checkRespawnsAndUpdateDb)(p);
+          await checkRespawnsAndUpdateDb(p);
           return true;
         }
       }
@@ -244,7 +240,7 @@ GameLogic = {
     }
   }
 
-  function tryToMovePlayersOnRollers(moves) {
+  async function tryToMovePlayersOnRollers(moves) {
     var move_canceled = true;
     var max = 0;
     while (move_canceled) {  // if a move was canceled we have to check for other conflicts again
@@ -268,29 +264,31 @@ GameLogic = {
         }
       }
     }
-    moves.forEach(function(roller_move) {
+    for (var roller_move of moves) {
       if (!roller_move.canceled) {
         //move player 1 step in roller direction and rotate
         roller_move.player.move(roller_move.step);
         roller_move.player.rotate(roller_move.rotate);
-        checkRespawnsAndUpdateDb(roller_move.player);
+        await checkRespawnsAndUpdateDb(roller_move.player);
       }
-    });
+    }
   }
 
   function isPlayerOnTile(players, x, y) {
     var found = null;
-    players.forEach(function(player) {
+    for (var player of players) {
       if (player.position.x == x && player.position.y == y && !player.needsRespawn) {
         found = player;
       }
-    });
+    }
     return found;
   }
 
-  function checkRespawnsAndUpdateDb(player, callback) {
-    console.log(player.name+" Player.position "+player.position.x+","+player.position.y+" "+player.isOnBoard()+"|"+player.isOnVoid());
-    if (!player.needsRespawn && (!player.isOnBoard() || player.isOnVoid() || player.damage > 9 )) {
+  async function checkRespawnsAndUpdateDb(player) {
+    var onBoard = await player.isOnBoard();
+    var onVoid = await player.isOnVoid();
+    console.log(player.name+" Player.position "+player.position.x+","+player.position.y+" "+onBoard+"|"+onVoid);
+    if (!player.needsRespawn && (!onBoard || onVoid || player.damage > 9 )) {
       player.damage = 0;
       if (player.powerState !== GameLogic.ON) {
           player.togglePowerDown();
@@ -298,46 +296,42 @@ GameLogic = {
       player.needsRespawn=true;
       player.optionalInstantPowerDown=true;
       player.optionCards = {};
-      Players.update(player._id, player);
+      await Players.updateAsync(player._id, player);
       if (player.lives > 0) {
-        var game = player.game();
+        var game = await player.game();
         game.waitingForRespawn.push(player._id);
-        Games.update(game._id, game);
+        await Games.updateAsync(game._id, game);
       }
       player.chat('died! (lives: '+ player.lives +', damage: '+ player.damage +')');
-      Meteor.wrapAsync(removePlayerWithDelay)(player);
+      removePlayerWithDelay(player);
     } else {
       console.log("updating position", player.name);
-      Players.update(player._id, player);
-    }
-    if (callback) {
-      callback();
+      await Players.updateAsync(player._id, player);
     }
   }
 
-  function removePlayerWithDelay(player, callback) {
-    Meteor.setTimeout(function() {
+  function removePlayerWithDelay(player) {
+    Meteor.setTimeout(async function() {
       player.position.x = player.board().width-1;
       player.position.y = player.board().height;
       player.direction = GameLogic.UP;
-      Players.update(player._id, player);
+      await Players.updateAsync(player._id, player);
       console.log("removing player", player.name);
-      Players.update(player._id, player);
-      callback();
+      await Players.updateAsync(player._id, player);
     }, _CARD_PLAY_DELAY);
   }
 
-  scope.respawnPlayerAtPos = function(player,x,y) {
+  scope.respawnPlayerAtPos = async function(player,x,y) {
     player.position.x = x;
     player.position.y = y;
     console.log("respawning player", player.name,'at', x,',',y);
-    Players.update(player._id, player);
+    await Players.updateAsync(player._id, player);
   };
 
-  scope.respawnPlayerWithDir = function(player,dir) {
+  scope.respawnPlayerWithDir = async function(player,dir) {
     player.direction = dir;
     player.needsRespawn = false;
-    Players.update(player._id, player);
+    await Players.updateAsync(player._id, player);
   };
-  
+
 })(GameLogic);
