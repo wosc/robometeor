@@ -70,12 +70,12 @@ mobile-status-bar@1.1.1
 modern-browsers@0.1.11
 modules@0.20.3
 modules-runtime@0.13.2
+momentjs:moment@2.30.1
 mongo@2.0.2
 mongo-decimal@0.1.4
 mongo-dev-server@1.1.1
 mongo-id@1.0.9
 mquandalle:jade@0.4.1
-mrt:moment@2.8.1
 npm-mongo@4.17.4
 observe-sequence@2.0.0
 ordered-dict@1.2.0

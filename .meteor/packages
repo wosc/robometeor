@@ -13,7 +13,7 @@ mquandalle:jade
 linto:fontawesome
 fourseven:scss
 accounts-ui
-mrt:moment
+momentjs:moment
 coffeescript
 lookback:tooltips
 marcelpanse:jquery-titlealert

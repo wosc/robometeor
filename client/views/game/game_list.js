@@ -7,6 +7,9 @@ Template.gameList.helpers({
   },
   endedGames: function() {
     return Games.find({winner: {$exists: true}}, {sort: {submitted: -1}});
+  },
+  formatDate: function(timestamp) {
+      return moment(new Date(timestamp)).fromNow();
   }
 });
 
