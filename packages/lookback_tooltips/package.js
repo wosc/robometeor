@@ -5,10 +5,10 @@ Package.describe({
   git: 'https://github.com/lookback/meteor-tooltips.git'
 });
 
-Package.on_use(function(api) {
-  api.versionsFrom('1.0.4');
+Package.onUse(function(api) {
+  api.versionsFrom('3.0.4');
   api.use('coffeescript reactive-var jquery templating tracker'.split(' '), 'client');
 
-  api.add_files('tooltips.html tooltips.coffee'.split(' '), 'client');
+  api.addFiles('tooltips.html tooltips.coffee'.split(' '), 'client');
   api.export('Tooltips', 'client');
 });

@@ -122,7 +122,7 @@ Template.tooltips.onCreated ->
 		@disabled.set(mq.matches)
 
 		mq.addListener (changed) =>
-		  @disabled.set(changed.matches)
+			@disabled.set(changed.matches)
 
 
 # Template helpers
