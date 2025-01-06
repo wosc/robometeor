@@ -2,19 +2,7 @@ Router.configure({
   layoutTemplate: 'applicationLayout'
 });
 
-Meteor.startup(function() {
-  document.title = "RoboRally online!";
-});
-
 Router.route('/', {
-  name: 'home.page',
-  layoutTemplate: 'home',
-  action: function() {
-    this.render();
-  }
-});
-
-Router.route('/online', {
   name: 'gamelist.page',
   loadingTemplate: 'loading',
 
