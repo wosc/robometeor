@@ -6,12 +6,12 @@ template(name="chat")
     h3 Chat
     hr.star-well
     div.messages
-      each this.messages
+      each messages
         if author
           div [{{timeToStr submitted}}] #{author}: #{message}
         else
           div.system [{{timeToStr submitted}}] #{message}
-          
+
 
   form.form-inline(role="form")
     div.form-group

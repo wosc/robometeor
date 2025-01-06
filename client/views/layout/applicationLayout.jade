@@ -1,4 +1,4 @@
-template(name="applicationLayout")
+template(name="head")
   head
     meta(charset='utf-8')
     meta(http-equiv='X-UA-Compatible', content='IE=edge')
@@ -9,8 +9,8 @@ template(name="applicationLayout")
     // Custom Fonts
     link(href='https://fonts.googleapis.com/css?family=Montserrat:400,700', rel='stylesheet', type='text/css')
     link(href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic', rel='stylesheet', type='text/css')
-  body
-    // Navigation
+
+template(name="nav")
     nav.navbar.navbar-default.navbar-fixed-top.navbar-shrink
       .container
         // Brand and toggle get grouped for better mobile display
@@ -30,28 +30,20 @@ template(name="applicationLayout")
               a(href="{{pathFor 'gamelist.page'}}") Games
             li.page-scroll
               +loginButtons
-    header
+
+
+template(name="footer")
+  footer.text-center
+    .footer-below
       .container
         .row
-          .col-md-8
-            +yield
-          .col-md-4.well
-            +yield("rightPanel")
-            +yield("rightPanel2")
-            +yield("rightPanel3")
-    // Footer
-    #fb-root
-    footer.text-center
-      .footer-below
-        .container
-          .row
-            .col-lg-12
-              +usersPill
-              h6.pull-right.small
-                i.fa.fa-youtube-play
-                a(href="https://youtu.be/0l8Y-L5IZLE", target="_blank")
-                  | tutorial video
-                i.fa.fa-book(style="padding-left: 10px")
-                a(href="/roborally-manual.pdf", target="_blank")
-                  | game rules PDF
+          .col-lg-12
+            +usersPill
+            h6.pull-right.small
+              i.fa.fa-youtube-play
+              a(href="https://youtu.be/0l8Y-L5IZLE", target="_blank")
+                | tutorial video
+              i.fa.fa-book(style="padding-left: 10px")
+              a(href="/roborally-manual.pdf", target="_blank")
+                | game rules PDF
   +tooltips

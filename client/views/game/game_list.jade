@@ -1,3 +1,17 @@
+template(name="gamelistPage")
+  +head
+  body
+    +nav
+    header
+      .container
+        .row
+          .col-md-8
+            +gameList
+          .col-md-4.well
+            +gameItemPostForm
+            +chat(gameId="global")
+    +footer
+
 template(name="gameList")
   div.chat.well
     unless currentUser
@@ -23,7 +37,7 @@ template(name="gameList")
       br
       h3 Finished games
       hr.star-well
-      each endedGames  
+      each endedGames
         h4.text-lowercase
           a.white(href="{{pathFor route='game.page'}}") #{name}
           span.small.text-lowercase won by #{winner} {{formatDate submitted}}
@@ -33,7 +47,7 @@ template(name="gameItemPostForm")
   hr.star-well
   if gameCreated
     with gameCreated
-      | You have an open game named 
+      | You have an open game named
       a(href="{{pathFor route='game.page'}}") #{name}
   else
     form.main(role="form")

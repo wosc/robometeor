@@ -1,21 +1,12 @@
 Template.board.helpers({
   inGame: function() {
-    return _.some(this.players, function(player) {
+    return _.some(this.game.players(), function(player) {
       return player.userId === Meteor.userId();
     });
   },
-  player: function() {
-    for (var i in this.players) {
-      var player = this.players[i];
-      if (player.userId === Meteor.userId()) {
-        return player;
-      }
-    }
-  },
-
   robots: function() {
     var r = [];
-    this.players.forEach(function(player) {
+    this.game.players().forEach(function(player) {
       var rclass = "r" + player.robotId;
       r.push({
         path: "/robots/robot_"+player.robotId.toString()+".png",
@@ -30,8 +21,8 @@ Template.board.helpers({
   },
   markers: function() {
     var m = [];
-    var p_cnt = this.players.length;
-    this.players.forEach(function(player) {
+    var p_cnt = this.game.players().length;
+    this.game.players().forEach(function(player) {
       var deg = 360 / p_cnt * player.robotId;
       m.push({
         path: "/robots/marker_"+player.robotId.toString()+".png",
@@ -49,7 +40,7 @@ Template.board.helpers({
     var s = [];
     if (this.game.playPhase === GameState.PLAY_PHASE.CHECKPOINTS) {
       if (Session.get('audio')) new Audio("/laser.mp3").play();
-      this.players.forEach(function(player,i) {
+      this.game.players().forEach(function(player,i) {
         if (!player.isPoweredDown() && !player.needsRespawn) {
           var offsetY;
           var offsetX;
@@ -132,7 +123,7 @@ Template.board.helpers({
     var s = [];
     var game = this.game;
     console.log(game.respawnUserId);
-    if (this.game.respawnUserId === Meteor.userId()) {
+    if (game.respawnUserId === Meteor.userId()) {
       game.selectOptions.forEach(function(opts) {
         opts.position = cssPosition(opts.x, opts.y);
         opts.gameId   = game._id;
@@ -349,14 +340,14 @@ Template.board.events({
   },
   'click .position-select': async function(e) {
     try {
-      await Meteor.callAsync('selectRespawnPosition', this.gameId, $(e.target).attr('data-x'), $(e.target).attr('data-y'));
+      await Meteor.callAsync('selectRespawnPosition', this.game._id, $(e.target).attr('data-x'), $(e.target).attr('data-y'));
     } catch (e) {
         alert(e);
     }
   },
   'click .direction-select': async function(e) {
     try {
-      await Meteor.callAsync('selectRespawnDirection', this.gameId, $(e.target).attr('data-dir'));
+      await Meteor.callAsync('selectRespawnDirection', this.game._id, $(e.target).attr('data-dir'));
     } catch (e) {
         alert(e);
     }

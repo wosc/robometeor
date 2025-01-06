@@ -1,7 +1,23 @@
+template(name="gamePage")
+  +head
+  body
+    +nav
+    header
+      .container
+        .row
+          .col-md-8
+            +chat(gameId=game._id)
+          .col-md-4.well
+            +gamePageActions(game=game)
+            +players(game=game)
+            +selectedBoard(game=game)
+    +footer
+
+
 template(name="gamePageActions")
   h2
     | Game created by 
-    span.small #{author}
+    span.small {{game.author}}
     
   unless gameFull
     unless inGame
@@ -20,15 +36,16 @@ template(name="gamePageActions")
 template(name="players")
   h3 Players
   each players
-    p #{name}
+    p {{name}}
   else
     p nobody joined yet :-(
-  p #{minPlayer} needed to start the game
+  p {{minPlayer}} needed to start the game
 
 template(name="selectedBoard")
   h3 Board
   .selected-board(style='clear:both;')
-    +thumbnail
+    each gameBoard
+      +thumbnail
   if ownGame
     p
       a.btn.btn-primary.select.action-button(href="#") Change board

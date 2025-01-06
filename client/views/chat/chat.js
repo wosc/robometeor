@@ -1,11 +1,14 @@
 Template.chat.helpers({
+  messages: function() {
+    return Chat.find();
+  },
+
   inGame: function() {
     return inGame(this.gameId);
   },
-  
-  timeToStr: function(time)
-  {	  
-	return moment(new Date(time)).format("L LT");
+
+  timeToStr: function(time) {
+    return moment(new Date(time)).format("L LT");
   },
 
   audio: function() {

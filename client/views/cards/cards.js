@@ -1,15 +1,16 @@
 Template.cards.helpers({
   player: function() {
-    return Players.findOne({userId: Meteor.userId()});
+      return getPlayer();
   },
   otherPlayers: function() {
     return Players.find({gameId: this.game._id, userId: {$ne: Meteor.userId()}});
   },
   chosenCards: function() {
-    return addUIData(this.chosenCards, false, getPlayer().lockedCnt(), true);
+    var player = getPlayer();
+    return addUIData(player.getChosenCards(), false, player.lockedCnt(), true);
   },
-  availableCards: function() {
-    var cards = this.handCards;
+  handCards: function() {
+    var cards = getPlayer().getHandCards();
     if (cards.length < 9) {
         //add empty cards^
         for (var j = cards.length; j < 9; j++) {
@@ -228,7 +229,7 @@ Template.card.events({
       Session.set("selectedSlot", getNextEmptySlotIndex(currentSlot));
 
       var player = getPlayer();
-      console.log('Chosen count: ', getChosenCnt());
+      console.log('Chosen count: ', player.chosenCardsCnt);
       if (!player.submitted) {
         chooseCard(player.gameId, this.cardId, currentSlot);
         setEmptySlot(currentSlot, false);
@@ -281,11 +282,12 @@ Template.cards.events({
         return;
     }
     if (powerState == GameLogic.OFF) {
-      this.chosenCards.forEach(function(item) {
+        var player = getPlayer();
+        player.getChosenCards().forEach(function(item) {
         if (item.type !== 'empty')
           $('.available.' + item.cardId).show();
       });
-      unchooseAllCards(getPlayer());
+      unchooseAllCards(player);
     }
     $(".playBtn").toggleClass("disabled", !allowSubmit());
   }
@@ -321,17 +323,13 @@ async function unchooseAllCards(player) {
   }
 }
 
-function getChosenCnt() {
-  return getPlayer().chosenCardsCnt;
-}
-
 function getSlotIndex() {
   return Session.get("selectedSlot") || 0;
 }
 
 function initEmptySlots() {
   var emptySlots = [];
-  var emptyCnt = GameLogic.CARD_SLOTS - getLockedCnt();
+  var emptyCnt = GameLogic.CARD_SLOTS - getPlayer().lockedCnt();
   for(var i=0;i<GameLogic.CARD_SLOTS;i++) {
     emptySlots.push(i < emptyCnt);
   }
@@ -363,16 +361,13 @@ function getNextEmptySlotIndex(currentSlot) {
   return  0;
 }
 
-function getLockedCnt() {
-  return getPlayer().lockedCnt();
-}
-
 function allowSubmit() {
-  return getChosenCnt() == 5 || getPlayer().isPoweredDown();
+  var player = getPlayer();
+  return player.chosenCardsCnt == 5 || player.isPoweredDown();
 }
 
 async function submitCards(game) {
-  var chosenCards = this.chosenCards;
+  var chosenCards = getPlayer().getChosenCards();
   console.log("submitting cards", chosenCards);
   $(document).find('.col-md-4.well').removeClass('countdown').removeClass('finish');
   try {

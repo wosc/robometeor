@@ -1,31 +1,14 @@
-Router.configure({
-  layoutTemplate: 'applicationLayout'
-});
-
 Router.route('/', {
   name: 'gamelist.page',
-  loadingTemplate: 'loading',
 
   waitOn: function() {
     return [Meteor.subscribe('games'),
       Meteor.subscribe('chat', "global")];
   },
-
-  action: function() {
-    this.render('gameList');
-    this.render('gameItemPostForm', {to: 'rightPanel'});
-    this.render('chat', {
-      to: 'rightPanel2',
-      data: function() {
-        return {messages: Chat.find(), gameId: "global"};
-      }
-    });
-  }
 });
 
 Router.route('/select/:_id', {
   name: 'boardselect.page',
-  loadingTemplate: 'loading',
 
   waitOn: function() {
     return [Meteor.subscribe('games'),
@@ -33,38 +16,20 @@ Router.route('/select/:_id', {
   },
 
   action: function() {
-    this.render('boardselect', {
-      data: function() {
-        var game = Games.findOne(this.params._id);
-        if (game === undefined) {
-          Router.go('gamelist.page');
-        } else if (game.started) {
-          console.log('game started, routing to board');
-          Router.go('board.page', {_id: this.params._id});
-        } else {
-          return {game: game, players: Players.find().fetch()};
-        }
-      }
-    });
-    this.render('gamePageActions', {
-      to: 'rightPanel',
-      data: function() {
-        return Games.findOne(this.params._id);
-      }
-    });
-    this.render('players', {
-      to: 'rightPanel2',
-      data: function() {
-        var game = Games.findOne(this.params._id);
-        return {players: Players.find(), game: game};
-      }
-    });
+    var game = Games.findOne(this.params._id);
+    if (game === undefined) {
+        Router.go('gamelist.page');
+    } else if (game.started) {
+        console.log('game started, routing to board');
+        Router.go('board.page', {_id: this.params._id});
+    } else {
+        this.render('boardselectPage', {data: {game: game}});
+    }
   }
 });
 
 Router.route('/games/:_id', {
   name: 'game.page',
-  loadingTemplate: 'loading',
 
   waitOn: function() {
     return [Meteor.subscribe('games'),
@@ -73,45 +38,15 @@ Router.route('/games/:_id', {
   },
 
   action: function() {
-    this.render('chat', {
-      data: function() {
-        var game = Games.findOne(this.params._id);
-        if (game === undefined) {
+      var game = Games.findOne(this.params._id);
+      if (game === undefined) {
           Router.go('gamelist.page');
-        } else if (game.started) {
+      } else if (game.started) {
           console.log('game started, routing to board');
           Router.go('board.page', {_id: this.params._id});
-        } else {
-          return {messages: Chat.find(), gameId: this.params._id};
-        }
+      } else {
+          this.render('gamePage', {data: {game: game}});
       }
-    });
-    this.render('gamePageActions', {
-      to: 'rightPanel',
-      data: function() {
-        return Games.findOne(this.params._id);
-      }
-    });
-    this.render('players', {
-      to: 'rightPanel2',
-      data: function() {
-        var game = Games.findOne(this.params._id);
-        return {players: Players.find(), game: game};
-      }
-    });
-    this.render('selectedBoard', {
-      to: 'rightPanel3',
-      data: function() {
-        var game = Games.findOne(this.params._id);
-        var board = game.board();
-        return { width: board.width*24,
-                 height: board.height*24,
-                 extra_class: '',
-                 game: game,
-                 board: board
-               };
-      }
-    });
   }
 });
 
@@ -129,33 +64,11 @@ Router.route('/board/:_id', {
   },
 
   action: function() {
-    this.render('board', {
-      data: function() {
-        var game = Games.findOne(this.params._id);
-        if (game === undefined) {
+      var game = Games.findOne(this.params._id);
+      if (game === undefined) {
           Router.go('gamelist.page');
-        } else {
-          return {game: game, players: Players.find().fetch()};
-        }
+      } else {
+          this.render('boardPage', {data: {game: game}});
       }
-    });
-    this.render('cards', {
-      to: 'rightPanel',
-      data: function() {
-        var c = Cards.findOne();
-        return {
-          game: Games.findOne(this.params._id),
-          handCards: c.handCards,
-          chosenCards: c.chosenCards,
-          players: Players.find()
-        };
-      }
-    });
-    this.render('chat', {
-      to: 'rightPanel2',
-      data: function() {
-        return {messages: Chat.find(), gameId: this.params._id};
-      }
-    });
   }
 });

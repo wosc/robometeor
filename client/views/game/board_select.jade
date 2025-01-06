@@ -1,3 +1,18 @@
+template(name="boardselectPage")
+  +head
+  body
+    +nav
+    header
+      .container
+        .row
+          .col-md-8
+            +boardselect(game=game)
+          .col-md-4.well
+            +gamePageActions(game=game)
+            +players(game=game)
+    +footer
+
+
 template(name="boardselect")
   .well
     h3 Select board
