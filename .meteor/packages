@@ -17,7 +17,6 @@ momentjs:moment
 coffeescript
 lookback:tooltips
 meteor-base
-mobile-experience
 mongo
 blaze-html-templates
 session
