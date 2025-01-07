@@ -118,7 +118,6 @@ Template.board.helpers({
   selectOptions: function() {
     var s = [];
     var game = this.game;
-    console.log(game.respawnUserId);
     if (game.respawnUserId === Meteor.userId()) {
       game.selectOptions.forEach(function(opts) {
         opts.position = cssPosition(opts.x, opts.y);
