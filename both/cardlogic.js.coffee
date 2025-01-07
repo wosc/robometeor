@@ -141,7 +141,7 @@ class @CardLogic
 
       if card<0 || !found
         # grab card from hand
-        cardIdFromHand = availableCards.splice(_.random(0, availableCards.length-1), 1)[0]
+        cardIdFromHand = availableCards.splice(Math.floor(Math.random() * (availableCards.length-1)), 1)[0]
         console.log("Handing out random card", cardIdFromHand)
         submittedCards[i] = cardIdFromHand
         player.cards[i] = CardLogic.RANDOM

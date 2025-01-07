@@ -94,7 +94,7 @@ game =
 @Games = new Meteor.Collection('games',
   transform: (doc) ->
     newInstance = Object.create(game)
-    return  _.extend(newInstance, doc)
+    return Object.assign(newInstance, doc)
 )
 
 Games.allow

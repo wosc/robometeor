@@ -216,7 +216,9 @@ GameState = {
         game.cardsToPlay.push(card);
       }
     }
-    game.cardsToPlay = _.sortBy(game.cardsToPlay, 'cardId').reverse();  // cardId has same order as card priority
+    var sortBy = (key) => { return (a, b) => (a[key] > b[key]) ? 1 : ((b[key] > a[key]) ? -1 : 0); };
+    // cardId has same order as card priority
+    game.cardsToPlay.sort(sortBy('cardId')).reverse();
     await Games.updateAsync(game._id, {$set: {
       cardsToPlay: game.cardsToPlay
     }});

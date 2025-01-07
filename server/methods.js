@@ -16,9 +16,10 @@ Meteor.methods({
     var author = getUsername(user);
     // pick out the whitelisted keys
 
-    var game = _.extend(_.pick(postAttributes, 'name'), {
+    var game = {
       userId: user._id,
       author: author,
+      name: postAttributes.name,
       submitted: new Date().getTime(),
       started: false,
       gamePhase: GameState.PHASE.IDLE,
@@ -29,7 +30,7 @@ Meteor.methods({
       waitingForRespawn: [],
       announce: false,
       cardsToPlay: []
-    });
+    };
     var board_id = BoardBox.getBoardId(game.name);
     if (board_id >= 0)
       game.boardId=board_id;
@@ -209,12 +210,13 @@ Meteor.methods({
       throw new Meteor.Error(401, "You need to login to post messages");
 
     var author = getUsername(user);
-    // pick out the whitelisted keys
-    var message = _.extend(_.pick(postAttributes, 'message', 'gameId'), {
+    var message = {
       userId: user._id,
+      gameId: postAttributes.gameId,
       author: author,
+      message: postAttributes.message,
       submitted: new Date().getTime()
-    });
+    };
     await Chat.insertAsync(message);
   },
   setAudio: async function(value) {
