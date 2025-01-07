@@ -100,7 +100,13 @@ game =
 Games.allow
   insert: (userId, doc) ->
     return false
+  insertAsync: (userId, doc) ->
+    return false
   update: (userId, doc) ->
     return false
+  updateAsync: (userId, doc) ->
+    return false
   remove: (userId, doc) ->
-    return doc && doc.userId == userId
+    return doc.userId == userId
+  removeAsync: (userId, doc) ->
+    return doc.userId == userId
