@@ -86,7 +86,7 @@ Template.chat.events({
   }
 });
 
-Template.chat.rendered = function() {
+Template.chat.onRendered(function() {
   Chat.find().observe({added: function() {
     var $chat     = $('.chat'),
         $printer  = $('.messages', $chat),
@@ -100,4 +100,4 @@ Template.chat.rendered = function() {
       stopOnMouseMove: true
     });
   }});
-};
+});
