@@ -1,28 +1,33 @@
-# Meteor packages used by this project, one per line.
-#
-# 'meteor add' and 'meteor remove' will edit this file for you,
-# but you can also edit it by hand.
-
-accounts-password
-mizzao:bootstrap-3
-iron:router
-# https://github.com/Meteor-Community-Packages/meteor-user-status/pull/183
-mizzao:user-status@2.0.0-rc.2
-mizzao:timesync@1.0.0-beta.0
-mquandalle:jade
-linto:fontawesome
-fourseven:scss
-accounts-ui
-momentjs:moment
-coffeescript
-lookback:tooltips
+# meteor core
 meteor-base
+shell-server
 mongo
-blaze-html-templates
-session
-jquery
 tracker
+session
+
+# build
+blaze-html-templates
 standard-minifier-css
 standard-minifier-js
-shell-server
+mquandalle:jade
+coffeescript
+fourseven:scss
+
+# frontend
+mizzao:bootstrap-3
+linto:fontawesome
+lookback:tooltips
+# undeclared by `tooltips`
 underscore
+jquery
+momentjs:moment
+
+iron:router
+
+# accounts
+accounts-password
+accounts-ui
+# https://github.com/Meteor-Community-Packages/meteor-user-status/pull/183
+mizzao:user-status@2.0.0-rc.2
+# need to pin this for `user-status`
+mizzao:timesync@1.0.0-beta.0
