@@ -103,10 +103,6 @@ Template.board.helpers({
     }
     return s;
   },
-  getRobotId: function() {
-    return Players.findOne({userId: Meteor.userId()}).robotId.toString();
-  },
-
   tiles: function() {
     return this.game.board().tiles;
   },
