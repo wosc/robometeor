@@ -97,37 +97,6 @@ Template.cards.helpers({
   },
   poweredDown: function() {
     return getPlayer().isPoweredDown();
-  },
-  lives: function() {
-    l = [];
-    for(var i=0;i<3;i++)
-      if (i<getPlayer().lives)
-        l.push('glyphicon-heart');
-      else
-        l.push('glyphicon-heart-empty');
-    return l;
-  },
-  dmgPercentage: function() {
-    return this.damage * 10;
-  },
-  headingForFinish: function() {
-    return this.visited_checkpoints == this.board().checkpoints.length-1;
-  },
-  nextCheckpoint: function() {
-    return this.visited_checkpoints+1;
-  },
-  hasOptionCards: function() {
-    return (Object.keys(getPlayer().optionCards).length > 0);
-  },
-  activeOptionCards: function() {
-    var r = [];
-    Object.keys(getPlayer().optionCards).forEach(function(optionKey) {
-      r.push({
-        name: CardLogic.getOptionTitle(optionKey),
-        desc: CardLogic.getOptionDesc(optionKey)
-      });
-    });
-    return r;
   }
 });
 
