@@ -1,6 +1,9 @@
 Template._tiles.helpers({
-  visited_checkpoint: function(number) {
-    var player = Players.findOne({userId: Meteor.userId()});
+  visited_checkpoint: async function(number) {
+    var player = await Players.findOneAsync({userId: Meteor.userId()});
+    if (player === undefined) {
+        return '';
+    }
     if (player.visited_checkpoints >= number) {
       return 'visited';
     } else {

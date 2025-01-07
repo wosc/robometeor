@@ -2,22 +2,22 @@ Template.gamePageActions.helpers({
   ownGame: function() {
     return this.game.userId == Meteor.userId();
   },
-  inGame: function() {
-    return Players.findOne({gameId: this.game._id, userId: Meteor.userId()});
+  inGame: async function() {
+    return await Players.findOneAsync({gameId: this.game._id, userId: Meteor.userId()});
   },
-  gameReady: function() {
-    return Players.find({gameId: this.game._id}).count() >= this.game.min_player;
+  gameReady: async function() {
+    return await Players.find({gameId: this.game._id}).countAsync() >= this.game.min_player;
   },
-  gameFull: function() {
-    return Players.find({gameId: this.game._id}).count() >= 8;
+  gameFull: async function() {
+    return Players.find({gameId: this.game._id}).countAsync() >= 8;
   }
 });
 
 Template.gamePageActions.events({
-  'click .delete': function(e) {
+  'click .delete': async function(e) {
     e.preventDefault();
     if (confirm("Remove this game?")) {
-      Games.remove(this.game._id);
+      await Games.removeAsync(this.game._id);
       Router.go('gamelist.page');
     }
   },

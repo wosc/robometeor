@@ -1,32 +1,28 @@
 Template.cards.helpers({
-  player: function() {
-      return getPlayer();
+  otherPlayers: async function() {
+    return await Players.findAsync({gameId: this.game._id, userId: {$ne: Meteor.userId()}});
   },
-  otherPlayers: function() {
-    return Players.find({gameId: this.game._id, userId: {$ne: Meteor.userId()}});
+  chosenCards: async function() {
+    return await addUIData(await this.player.getChosenCards(), false, this.player.lockedCnt(), true);
   },
-  chosenCards: function() {
-    var player = getPlayer();
-    return addUIData(player.getChosenCards(), false, player.lockedCnt(), true);
-  },
-  handCards: function() {
-    var cards = getPlayer().getHandCards();
+  handCards: async function() {
+    var cards = await this.player.getHandCards();
     if (cards.length < 9) {
         //add empty cards^
         for (var j = cards.length; j < 9; j++) {
             cards.push(CardLogic.DAMAGE);
         }
     }
-    return addUIData(cards, true, false,false);
+    return await addUIData(cards, true, false,false);
   },
   showCards: function() {
     return (this.game.gamePhase == GameState.PHASE.PROGRAM &&
-       getPlayer() && !getPlayer().submitted);
+       !this.player.submitted);
   },
-  showPlayButton: function() {
-    return !getPlayer().submitted;
+  showPlayButton: async function() {
+    return !this.player.submitted;
   },
-  gameState: function() {
+  gameState: async function() {
     switch (this.game.gamePhase) {
       case GameState.PHASE.IDLE:
       case GameState.PHASE.DEAL:
@@ -34,8 +30,7 @@ Template.cards.helpers({
       case GameState.PHASE.ENDED:
         return "Game over";
       case GameState.PHASE.PROGRAM:
-        var player = getPlayer();
-        if (player.isPoweredDown() && !player.optionalInstantPowerDown)
+        if (this.player.isPoweredDown() && !this.player.optionalInstantPowerDown)
           return "Powered down";
         else
           return "Pick your cards";
@@ -77,7 +72,7 @@ Template.cards.helpers({
     return "Problem?";
   },
   ownPowerStateName: function() {
-    switch (getPlayer().powerState) {
+    switch (this.player.powerState) {
       case GameLogic.OFF:
         return  'cancel power down';
       case GameLogic.DOWN:
@@ -87,7 +82,7 @@ Template.cards.helpers({
     }
   },
   ownPowerStateStyle: function() {
-    switch (getPlayer().powerState) {
+    switch (this.player.powerState) {
       case GameLogic.DOWN:
       case GameLogic.OFF:
         return  'btn-danger';
@@ -96,7 +91,7 @@ Template.cards.helpers({
     }
   },
   poweredDown: function() {
-    return getPlayer().isPoweredDown();
+    return this.player.isPoweredDown();
   }
 });
 
@@ -122,8 +117,8 @@ Template.playerStatus.helpers({
     else
       return this.name;
   },
-  cardsHtml: function() {
-    return addUIData(this.cards || [], false, this.lockedCnt(), false);
+  cardsHtml: async function() {
+    return await addUIData(this.cards || [], false, this.lockedCnt(), false);
   },
   lives: function() {
     l = [];
@@ -143,24 +138,29 @@ Template.playerStatus.helpers({
     else if (this.powerState == GameLogic.DOWN)
       return 'power down played';
   },
-  headingForFinish: function() {
-    return this.visited_checkpoints == this.board().checkpoints.length-1;
+  headingForFinish: async function() {
+    var board = await this.board();
+    return this.visited_checkpoints == board.checkpoints.length-1;
   },
-  nextCheckpoint: function() {
-    return Math.min(this.board().checkpoints.length, this.visited_checkpoints+1);
+  nextCheckpoint: async function() {
+    var board = await this.board();
+    return Math.min(board.checkpoints.length, this.visited_checkpoints+1);
   },
-  showSubmittedLabel: function() {
-    return this.submitted && this.game().gamePhase == GameState.PHASE.PROGRAM;
+  showSubmittedLabel: async function() {
+    var game = await this.game();
+    return this.submitted && game.gamePhase == GameState.PHASE.PROGRAM;
   },
-  showPoweredDownLabel: function() {
+  showPoweredDownLabel: async function() {
+    var game = await this.game();
     return this.powerState == GameLogic.OFF &&
-           (this.game().gamePhase != GameState.PHASE.PROGRAM || this.submitted);
+           (game.gamePhase != GameState.PHASE.PROGRAM || this.submitted);
   },
   powerDownPlayed: function() {
     return (this.powerState == GameLogic.DOWN);
   },
-  showRemoveButton: function() {
-    return this.game().gamePhase != GameState.PHASE.ENDED;
+  showRemoveButton: async function() {
+    var game = await this.game();
+    return game.gamePhase != GameState.PHASE.ENDED;
   },
   hasOptionCards: function() {
     return (Object.keys(this.optionCards).length > 0);
@@ -193,15 +193,15 @@ Template.playerStatus.events({
 Template.card.events({
   'click .available': async function(e) {
     var currentSlot = getSlotIndex();
-    if ($(e.currentTarget).css("opacity") == 1 && isEmptySlot(currentSlot)) {
+    if ($(e.currentTarget).css("opacity") == 1 && await isEmptySlot(currentSlot)) {
       $(e.currentTarget).css("opacity", "0.3");
-      Session.set("selectedSlot", getNextEmptySlotIndex(currentSlot));
+      Session.set("selectedSlot", await getNextEmptySlotIndex(currentSlot));
 
-      var player = getPlayer();
+      var player = await getPlayer();
       console.log('Chosen count: ', player.chosenCardsCnt);
       if (!player.submitted) {
-        chooseCard(player.gameId, this.cardId, currentSlot);
-        setEmptySlot(currentSlot, false);
+        await chooseCard(player.gameId, this.cardId, currentSlot);
+        await setEmptySlot(currentSlot, false);
         console.log("choose card ",this.cardId,' for slot ', getSlotIndex());
 
         if (player.isPoweredDown())
@@ -211,7 +211,7 @@ Template.card.events({
               alert(e);
               return;
           }
-          $(".playBtn").toggleClass("disabled", !allowSubmit());
+          $(".playBtn").toggleClass("disabled", !await allowSubmit());
        } else {
         $(e.currentTarget).css("opacity", "1");
         Session.set("selectedSlot", currentSlot);
@@ -219,12 +219,12 @@ Template.card.events({
     }
 
   },
-  'click .played': function(e) {
-    if (!isEmptySlot(this.slot) && this.class.indexOf("locked") == -1) {
+  'click .played': async function(e) {
+    if (!await isEmptySlot(this.slot) && this.class.indexOf("locked") == -1) {
       setEmptySlot(this.slot, true);
-      var player = getPlayer();
+      var player = await getPlayer();
       if (!player.submitted) {
-        unchooseCard(player.gameId, this.slot);
+        await unchooseCard(player.gameId, this.slot);
         $('.available.' + this.cardId).css("opacity", "1");
         Session.set("selectedSlot", this.slot);
       } else {
@@ -232,8 +232,9 @@ Template.card.events({
       }
     }
   },
-  'click .empty': function(e) {
-    if (!getPlayer().submitted) {
+  'click .empty': async function(e) {
+    var player = await getPlayer();
+    if (!player.submitted) {
       Session.set("selectedSlot", this.slot);
     }
   }
@@ -251,19 +252,21 @@ Template.cards.events({
         return;
     }
     if (powerState == GameLogic.OFF) {
-        var player = getPlayer();
-        player.getChosenCards().forEach(function(item) {
-        if (item.type !== 'empty')
-          $('.available.' + item.cardId).show();
-      });
-      unchooseAllCards(player);
+        var player = await getPlayer();
+        var cards = await player.getChosenCards();
+        for (var item of cards) {
+          if (item.type !== 'empty') {
+            $('.available.' + item.cardId).show();
+          }
+      }
+      await unchooseAllCards(player);
     }
-    $(".playBtn").toggleClass("disabled", !allowSubmit());
+    $(".playBtn").toggleClass("disabled", !await allowSubmit());
   }
 });
 
-function getPlayer() {
-    return Players.findOne({userId: Meteor.userId()});
+async function getPlayer() {
+    return await Players.findOneAsync({userId: Meteor.userId()});
 }
 
 async function chooseCard(gameId, card, slot) {
@@ -284,7 +287,7 @@ async function unchooseCard(gameId, slot) {
 
 async function unchooseAllCards(player) {
   Session.set("selectedSlot", 0);
-  initEmptySlots();
+  await initEmptySlots();
   try {
     await Meteor.callAsync('deselectAllsCards', player.gameId);
   } catch (e) {
@@ -296,47 +299,50 @@ function getSlotIndex() {
   return Session.get("selectedSlot") || 0;
 }
 
-function initEmptySlots() {
+async function initEmptySlots() {
+  var player = await getPlayer();
   var emptySlots = [];
-  var emptyCnt = GameLogic.CARD_SLOTS - getPlayer().lockedCnt();
+  var emptyCnt = GameLogic.CARD_SLOTS - player.lockedCnt();
   for(var i=0;i<GameLogic.CARD_SLOTS;i++) {
     emptySlots.push(i < emptyCnt);
   }
   Session.set("emptySlots", emptySlots);
 }
 
-function getEmptySlots() {
+async function getEmptySlots() {
   if (!Session.get("emptySlots")) {
-    initEmptySlots();
+    await initEmptySlots();
   }
   return Session.get("emptySlots");
 }
 
-function isEmptySlot(index) {
-  return getEmptySlots()[index];
+async function isEmptySlot(index) {
+  var slots = await getEmptySlots();
+  return slots[index];
 }
 
-function setEmptySlot(index, value) {
-  var slots = getEmptySlots();
+async function setEmptySlot(index, value) {
+  var slots = await getEmptySlots();
   slots[index] = value;
   Session.set("emptySlots", slots);
 }
 
-function getNextEmptySlotIndex(currentSlot) {
-  var emptySlots = getEmptySlots();
+async function getNextEmptySlotIndex(currentSlot) {
+  var emptySlots = await getEmptySlots();
   for (var j=currentSlot+1;j<currentSlot+GameLogic.CARD_SLOTS;j++)
     if (emptySlots[j%GameLogic.CARD_SLOTS])
       return j%GameLogic.CARD_SLOTS;
   return  0;
 }
 
-function allowSubmit() {
-  var player = getPlayer();
+async function allowSubmit() {
+  var player = await getPlayer();
   return player.chosenCardsCnt == 5 || player.isPoweredDown();
 }
 
 async function submitCards(game) {
-  var chosenCards = getPlayer().getChosenCards();
+  var player = await getPlayer();
+  var chosenCards = await player.getChosenCards();
   console.log("submitting cards", chosenCards);
   $(document).find('.col-md-4.well').removeClass('countdown').removeClass('finish');
   try {
@@ -349,8 +355,10 @@ async function submitCards(game) {
   Session.set("emptySlots",false);
 }
 
-function addUIData(cards, available, locked, selectable) {
-  var playerCnt = getPlayer().game().playerCnt();
+async function addUIData(cards, available, locked, selectable) {
+  var player = await getPlayer();
+  var game = await player.game();
+  var playerCnt = await game.playerCnt();
   var uiCards = [];
   cards.forEach(function(card, i) {
     var cardProp = {

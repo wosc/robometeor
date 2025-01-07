@@ -1,12 +1,11 @@
 Template.board.helpers({
-  inGame: function() {
-    return _.some(this.game.players(), function(player) {
-      return player.userId === Meteor.userId();
-    });
+  inGame: async function() {
+    return await Players.findOneAsync({gameId: gameId, userId: Meteor.userId()});
   },
-  robots: function() {
+  robots: async function() {
     var r = [];
-    this.game.players().forEach(function(player) {
+    var players = await this.game.players();
+    for (var player of players) {
       var rclass = "r" + player.robotId;
       r.push({
         path: "/robots/robot_"+player.robotId.toString()+".png",
@@ -16,13 +15,14 @@ Template.board.helpers({
         poweredDown: player.isPoweredDown(),
         name: (player.userId === Meteor.userId()) ? "You" : player.name
       });
-    });
+    }
     return r;
   },
-  markers: function() {
+  markers: async function() {
     var m = [];
-    var p_cnt = this.game.players().length;
-    this.game.players().forEach(function(player) {
+    var p_cnt = await this.game.playerCnt();
+    var players = await this.game.players();
+    for (var player of players) {
       var deg = 360 / p_cnt * player.robotId;
       m.push({
         path: "/robots/marker_"+player.robotId.toString()+".png",
@@ -30,17 +30,19 @@ Template.board.helpers({
         position: cssPosition(player.start.x, player.start.y),
         direction: cssRotate(deg)
       });
-    });
+    }
     return m;
   },
-  shots: function() {
+  shots: async function() {
     var laserWidth = 4;
     var tileWidth = 50;
     var startOffset = 5;
     var s = [];
     if (this.game.playPhase === GameState.PLAY_PHASE.CHECKPOINTS) {
       if (Session.get('audio')) new Audio("/laser.mp3").play();
-      this.game.players().forEach(function(player,i) {
+      var players = await this.game.players();
+      for (var i in players) {
+        var player = players[i];
         if (!player.isPoweredDown() && !player.needsRespawn) {
           var offsetY;
           var offsetX;
@@ -99,7 +101,7 @@ Template.board.helpers({
           });
           s.push({shot:style, laser_class: lc});
         }
-      });
+      }
     }
     return s;
   },
@@ -213,19 +215,19 @@ Template.board.helpers({
     var game = this.game;
     return (game.playPhase === GameState.PLAY_PHASE.MOVE_BOTS && game.announceCard);
   },
-  cardPlaying: function() {
+  cardPlaying: async function() {
     var game = this.game;
-      var cardId = game.announceCard.cardId;
-      var player = Players.findOne(game.announceCard.playerId);
-      return {
-        class: 'played announce-move',
-        priority: CardLogic.priority(cardId),
-        type: CardLogic.cardType(cardId, game.playerCnt()).name,
-        playerName: player.name,
-        position: cssPosition(player.position.x, player.position.y,25,25),
-        robotId: player.robotId.toString()
-      };
-
+    var cardId = game.announceCard.cardId;
+    var player = await Players.findOneAsync(game.announceCard.playerId);
+    var players = await game.playerCnt();
+    return {
+      class: 'played announce-move',
+      priority: CardLogic.priority(cardId),
+      type: CardLogic.cardType(cardId, players).name,
+      playerName: player.name,
+      position: cssPosition(player.position.x, player.position.y,25,25),
+      robotId: player.robotId.toString()
+    };
   },
 
 });

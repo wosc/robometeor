@@ -68,7 +68,10 @@ Router.route('/board/:_id', {
       if (game === undefined) {
           Router.go('gamelist.page');
       } else {
-          this.render('boardPage', {data: {game: game}});
+          // Should `await` for consistency, but IronRouter does not support that.
+          // Luckily on client the sync API still works.
+          var player = Players.findOne({userId: Meteor.userId()});
+          this.render('boardPage', {data: {game: game, player: player}});
       }
   }
 });

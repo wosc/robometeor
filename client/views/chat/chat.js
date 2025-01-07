@@ -3,8 +3,8 @@ Template.chat.helpers({
     return Chat.find();
   },
 
-  inGame: function() {
-    return inGame(this.gameId);
+  inGame: async function() {
+    return await inGame(this.gameId);
   },
 
   timeToStr: function(time) {
@@ -15,18 +15,18 @@ Template.chat.helpers({
       return Session.get('audio') ? "on" : "off";
   },
 
-  canJoin: function() {
+  canJoin: async function() {
       if (this.gameId == "global") return false;
-      if (inGame(this.gameId)) return false;
-      var game = Games.findOne(this.gameId);
+      if (await inGame(this.gameId)) return false;
+      var game = await Games.findOneAsync(this.gameId);
       if (game.gamePhase == GameState.PHASE.ENDED) return false;
-      var players = Players.find({gameId: this.gameId}).fetch();
-      return players.length <= game.max_player;
+      var players = await Players.find({gameId: this.gameId}).countAsync();
+      return players <= game.max_player;
   }
 });
 
-function inGame(gameId) {
-    return Players.findOne({gameId: gameId, userId: Meteor.userId(), robotId: {$ne:null}});
+async function inGame(gameId) {
+    return await Players.findOneAsync({gameId: gameId, userId: Meteor.userId(), robotId: {$ne:null}});
 }
 
 Template.chat.events({
@@ -48,7 +48,7 @@ Template.chat.events({
     }
   },
   'click .cancel': async function() {
-    var game = Games.findOne(this.gameId);
+    var game = await Games.findOneAsync(this.gameId);
     if (game.gamePhase != GameState.PHASE.ENDED) {
       if (confirm("If you leave, you will forfeit the game, are you sure you want to give up?")) {
         try {
@@ -86,8 +86,8 @@ Template.chat.events({
   }
 });
 
-Template.chat.onRendered(function() {
-  Chat.find().observe({added: function() {
+Template.chat.onRendered(async function() {
+  await Chat.find().observeAsync({added: function() {
     var $chat     = $('.chat'),
         $printer  = $('.messages', $chat),
         printerH  = $printer.innerHeight();

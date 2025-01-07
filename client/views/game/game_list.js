@@ -14,8 +14,8 @@ Template.gameList.helpers({
 });
 
 Template.gameItemPostForm.helpers({
-  gameCreated: function() {
-    return Games.findOne({userId: Meteor.userId(), winner: null});
+  gameCreated: async function() {
+    return await Games.findOneAsync({userId: Meteor.userId(), winner: null});
   }
 });
 

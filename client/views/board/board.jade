@@ -8,7 +8,7 @@ template(name="boardPage")
           .col-md-8
             +board(game=game)
           .col-md-4.well
-            +cards(game=game)
+            +cards(game=game player=player)
             +chat(gameId=game._id)
     +footer
 
