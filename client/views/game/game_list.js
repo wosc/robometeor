@@ -9,7 +9,7 @@ Template.gameList.helpers({
     return Games.find({winner: {$exists: true}}, {sort: {submitted: -1}});
   },
   formatDate: function(timestamp) {
-      return moment(new Date(timestamp)).fromNow();
+      return new Date(timestamp).toLocaleString();
   }
 });
 

@@ -20,7 +20,6 @@ lookback:tooltips
 # undeclared by `tooltips`
 underscore
 jquery
-momentjs:moment
 
 iron:router
 

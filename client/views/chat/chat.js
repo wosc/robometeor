@@ -8,7 +8,7 @@ Template.chat.helpers({
   },
 
   timeToStr: function(time) {
-    return moment(new Date(time)).format("L LT");
+    return new Date(time).toLocaleString();
   },
 
   audio: function() {

@@ -67,7 +67,6 @@ mizzao:user-status@2.0.0-rc.2
 modern-browsers@0.1.11
 modules@0.20.3
 modules-runtime@0.13.2
-momentjs:moment@2.30.1
 mongo@2.0.2
 mongo-decimal@0.1.4
 mongo-dev-server@1.1.1
