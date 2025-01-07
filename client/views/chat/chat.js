@@ -94,10 +94,5 @@ Template.chat.onRendered(async function() {
     if ($printer && $printer[0]) {
       $printer.stop().animate( {scrollTop: $printer[0].scrollHeight - printerH  }, 100);
     }
-    $.titleAlert("New chat message!", {
-      interval: 1000,
-      stopOnFocus: true,
-      stopOnMouseMove: true
-    });
   }});
 });

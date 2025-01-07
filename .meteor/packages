@@ -16,7 +16,6 @@ accounts-ui
 momentjs:moment
 coffeescript
 lookback:tooltips
-marcelpanse:jquery-titlealert
 meteor-base
 mobile-experience
 mongo
