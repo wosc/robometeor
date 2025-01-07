@@ -103,4 +103,4 @@ Games.allow
   update: (userId, doc) ->
     return false
   remove: (userId, doc) ->
-    return ownsDocument(userId, doc)
+    return doc && doc.userId == userId

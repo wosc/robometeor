@@ -1,3 +1,8 @@
+function getUsername(user) {
+    return user.emails[0].address.split('@')[0].replace(/[^a-zA-Z0-9]/g, ' ').replace(/ +/g, ' ');
+};
+
+
 Meteor.methods({
   createGame: async function(postAttributes) {
     var user = await Meteor.userAsync();
